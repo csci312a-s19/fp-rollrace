@@ -8,27 +8,81 @@ const jump = {
   UP: 1,
   DOWN: 2
 };
-const JUMP_HEIGHT = 120;
-const JUMP_TIME = 500;
+const JUMP_HEIGHT = 200;
+const JUMP_SPEED = 0.3;
 const UPDATE_TIMEOUT = 0.01;
-const SCROLL_SPEED = 1 / 5;
+const SCROLL_SPEED = 0.1;
+
+const readMap = listPaths => {
+  const data = [];
+  listPaths.forEach((path, index) => {
+    data[index] = {
+      walls: [],
+      flats: []
+    };
+
+    //console.log(path);
+    const characters = path.split(' ');
+    let currentAction;
+    let xDistance = parseInt(characters[1]);
+    let yDistance = parseInt(characters[2]);
+    characters.splice(3).forEach(value => {
+      //console.log(value);
+      if (value === 'v') {
+        currentAction = 'v';
+      } else if (value === 'h') {
+        currentAction = 'h';
+      } else if (currentAction === 'v') {
+        data[index].walls.push({
+          xPosition: xDistance,
+          top: Math.max(yDistance, yDistance + parseInt(value)),
+          bottom: Math.min(yDistance, yDistance + parseInt(value))
+        });
+        yDistance = yDistance + parseInt(value);
+      } else if (currentAction === 'h') {
+        data[index].flats.push({
+          height: yDistance,
+          start: xDistance,
+          end: xDistance + parseInt(value)
+        });
+        xDistance = xDistance + parseInt(value);
+      }
+    });
+  });
+  //console.log('here');
+
+  return data;
+};
 
 class GameEngine extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
       paused: false,
+      stuck: false,
       x: 60,
       y: 360,
       mapTranslation: 0,
+      mapTranslationStart: 0,
       yStart: 400,
       jumpState: jump.STOP,
+      jumpInitiated: false,
       windowWidth: window.outerWidth,
       windowHeight: window.outerHeight
     };
+    this.paths = [
+      'm 0, 442 h 159 v -79 h 159 v 79 h 95 v 95 h 143 v -95 h 381 v -95 h 159 v 95 h 238 v -95 h 365 v -95 h 286 v -95 h 143 v 413 h 333 v -95 h 603 v 95 h 238 v -79 h 143 v 175 h 127 v -79 h 143 v -95 h 111 v 16 h 429 v -143 h 111 v 143 h 79 254 v -111 h 127 v 111 h 270 v 143 h 143 v -79 h 79 v -79 h 238 v -127 h 175 v 127 h 143 v -95 h 127 v 238 h 159 v -111 h 270 v -127 h 159 v 175 h 238 v -111 h 190 v 95 h 127 v -127 h 238 h 159 v -127 h 190 v 190 h 206 v -95 h 111 v 79 h 127 v -111 h 111 v 143 h 95 v -127 h 127 v 143 h 127 v -127 h 127 v 175 0 143 h 127 v 0 h 333 v -175 h 127 v 143 h 111 v -222 h 333 v -127 h 222 v 0 h 190',
+      'm 2340, 100 h 511 v -111 h 159 v 175 h 206 v -127 h 127 v -111 h 143 v 238 h 127 v -95 h 111 v 95 h 111 v -95 h 143 v 95 h 159 v -190 h 127 v 159 h 175 v -111 h 159 v 111 h 143 v -95 h 127 v 95 h 476'
+    ];
+    this.data = readMap(this.paths);
+    console.log(this.data);
 
-    this.gameStartTime = null;
+    this.mapRef = React.createRef();
+
+    this.translationStartTime = null;
     this.jumpStartTime = null;
+    this.descendStartTime = null;
 
     /*
      * I don't know why, but the event gets messed up after rerendering if
@@ -68,12 +122,13 @@ class GameEngine extends Component {
    */
   handleKeyPress(event) {
     if (event.keyCode === 32 && this.state.jumpState === jump.STOP) {
-      if (!this.gameStartTime) {
-        this.gameStartTime = new Date().getTime();
+      if (!this.translationStartTime) {
+        this.translationStartTime = new Date().getTime();
       }
       this.jumpStartTime = new Date().getTime();
       this.setState({
-        yStart: this.state.y,
+        yStart: this.state.y + 1,
+        y: this.state.y + 1,
         jumpState: jump.UP
       });
     } else {
@@ -91,54 +146,144 @@ class GameEngine extends Component {
 
   // Handle animation
   componentDidUpdate() {
-    // don't update if game has not started
-    if (this.gameStartTime) {
-      // don't begin a jump if no jump was initialized
-      if (this.state.jumpState !== jump.STOP) {
-        const currentTime = new Date().getTime();
+    let {
+      y,
+      yStart,
+      jumpState,
+      mapTranslation,
+      mapTranslationStart,
+      stuck
+    } = this.state;
 
+    //console.log(this.data);
+    // don't update if game has not started
+    if (this.translationStartTime) {
+      let stillStuck = false;
+      let notFalling = false;
+      for (let i = 0; i < this.data.length; i++) {
+        //console.log(this.data[i]);
+        //console.log(i);
+        for (let j = 0; j < this.data[i].walls.length; j++) {
+          //console.log(this.data[i].walls[j]);
+          //console.log(j);
+          //console.log(this.data[i].walls.length);
+          //console.log(this.data[i].walls[j].xPosition + this.state.mapTranslation);
+          if (
+            Math.abs(
+              this.state.x +
+                80 -
+                (this.data[i].walls[j].xPosition + this.state.mapTranslation)
+            ) < 1 &&
+            ((this.state.y < this.data[i].walls[j].top &&
+              this.state.y > this.data[i].walls[j].bottom) ||
+              (this.state.y + 80 < this.data[i].walls[j].top &&
+                this.state.y + 80 > this.data[i].walls[j].bottom))
+          ) {
+            //80 comes from width of sprite
+
+            //console.log('stopped');
+            stillStuck = true;
+          }
+        }
+        for (let j = 0; j < this.data[i].flats.length; j++) {
+          if (
+            Math.abs(this.state.y + 80 - this.data[i].flats[j].height) < 2 &&
+            ((this.state.x < this.data[i].flats[j].end + mapTranslation &&
+              this.state.x > this.data[i].flats[j].start + mapTranslation) ||
+              (this.state.x + 80 < this.data[i].flats[j].end + mapTranslation &&
+                this.state.x + 80 >
+                  this.data[i].flats[j].start + mapTranslation))
+          ) {
+            //80 comes from width of sprite
+            //console.log('thats it');
+            //console.log(this.data[i].flats[j]);
+            //console.log(mapTranslation);
+            notFalling = true;
+          }
+        }
+      }
+      if (!stillStuck && stuck) {
+        //console.log('reset')
+        stuck = false;
+        this.translationStartTime = new Date().getTime();
+      }
+      if (stillStuck && !stuck) {
+        stuck = true;
+        mapTranslationStart = mapTranslation;
+      }
+      if (!notFalling && jumpState === jump.STOP) {
+        //console.log('reset')
+        yStart = y;
+        jumpState = jump.DOWN;
+        this.descendStartTime = new Date().getTime();
+      }
+      if (notFalling && jumpState === jump.DOWN) {
+        yStart = y;
+        jumpState = jump.STOP;
+      }
+
+      // don't begin a jump if no jump was initialized
+
+      if (jumpState === jump.DOWN) {
+        const currentTime = new Date().getTime();
+        /*
+         * Need to clear timeout or the calls start to stack up and too many
+         * fire one after another, changing the scroll speed and causing
+         * extra computation.
+         */
+        //console.log(this.state.yStart);
+        //console.log(this.state.y);
+
+        y = yStart + (currentTime - this.descendStartTime) * JUMP_SPEED;
+      } else if (jumpState === jump.UP) {
+        const currentTime = new Date().getTime();
         // mid jump case
-        if (currentTime - this.jumpStartTime < JUMP_TIME) {
+        if ((currentTime - this.jumpStartTime) * JUMP_SPEED <= JUMP_HEIGHT) {
           /*
            * Need to clear timeout or the calls start to stack up and too many
            * fire one after another, changing the scroll speed and causing
            * extra computation.
            */
-          clearTimeout(this.mapTimeout);
-          this.mapTimeout = setTimeout(() => {
-            this.setState({
-              mapTranslation:
-                (this.gameStartTime - new Date().getTime()) * SCROLL_SPEED,
-              y:
-                this.state.yStart -
-                Math.abs(
-                  Math.abs(
-                    ((currentTime - this.jumpStartTime) / JUMP_TIME) *
-                      2 *
-                      JUMP_HEIGHT -
-                      JUMP_HEIGHT
-                  ) - JUMP_HEIGHT
-                )
-            });
-          }, UPDATE_TIMEOUT); // prevent max depth calls
+
+          y =
+            this.state.yStart - (currentTime - this.jumpStartTime) * JUMP_SPEED;
         } else {
           /*
            * stop jump when jump should be over and return the sprite to the
            * original prejump location
            */
-          this.setState({
-            jumpState: jump.STOP,
-            y: this.state.yStart,
-            mapTranslation:
-              (this.gameStartTime - new Date().getTime()) * SCROLL_SPEED
-          });
+          //console.log("going down")
+          //console.log(y);
+          //console.log(yStart);
+          yStart = y;
+          jumpState = jump.DOWN;
+          this.descendStartTime = new Date().getTime();
+          //console.log(yStart);
         }
-      } else {
+      }
+      if (!stuck) {
         clearTimeout(this.mapTimeout);
         this.mapTimeout = setTimeout(() => {
           this.setState({
             mapTranslation:
-              (this.gameStartTime - new Date().getTime()) * SCROLL_SPEED
+              mapTranslationStart -
+              (new Date().getTime() - this.translationStartTime) * SCROLL_SPEED,
+            y: y,
+            jumpState: jumpState,
+            yStart: yStart,
+            mapTranslationStart: mapTranslationStart,
+            stuck: stuck
+          });
+        }, UPDATE_TIMEOUT);
+      } else {
+        clearTimeout(this.mapTimeout);
+        this.mapTimeout = setTimeout(() => {
+          this.setState({
+            y: y,
+            jumpState: jumpState,
+            yStart: yStart,
+            mapTranslationStart: mapTranslationStart,
+            stuck: stuck
           });
         }, UPDATE_TIMEOUT);
       }
@@ -161,8 +306,7 @@ class GameEngine extends Component {
         height={this.state.windowHeight}
         width={this.state.windowWidth}
       >
-                
-        <Map translation={this.state.mapTranslation} />
+        <Map paths={this.paths} translation={this.state.mapTranslation} />
         <rect
           rx={15}
           ry={15}
@@ -174,7 +318,7 @@ class GameEngine extends Component {
         />
         <g
           onClick={() => {
-            if (this.gameStartTime) this.setState({ paused: true });
+            if (this.translationStartTime) this.setState({ paused: true });
           }}
         >
           <rect
@@ -213,7 +357,6 @@ class GameEngine extends Component {
         ) : (
           <></>
         )}
-              
       </svg>
     );
   }
