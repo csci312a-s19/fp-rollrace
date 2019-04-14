@@ -6,3 +6,15 @@ body {
   /* prevent page scrolling */
   overflow: hidden;
 }
+.play-button {
+  display: flex;
+  justify-content: center;
+}
+.settings-button {
+  display: flex;
+  justify-content: center;
+}
+.stats-button {
+  display: flex;
+  justify-content: center;
+}
