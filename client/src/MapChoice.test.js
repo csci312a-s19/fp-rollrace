@@ -5,6 +5,6 @@ import { mount } from 'enzyme';
 describe('MapChoice test', () => {
   test('Possible Maps should be visible', () => {
     const comp = mount(<MapChoice />);
-    expect(comp.find('id="maps"')).toBeVisible();
+    expect(comp.find('Row[id="maps"]')).toBeVisible();
   });
 });
