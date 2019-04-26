@@ -3,7 +3,7 @@ import { Row, Col, Card, CardBody, CardTitle, CardImg } from 'reactstrap';
 export default function MapChoice(props) {
   const { func } = props;
   return (
-    <Row id="maps" class="row">
+    <Row id="maps">
       <a
         style={{ cursor: 'pointer' }}
         onClick={() => {
