@@ -24,7 +24,8 @@ class Timer extends Component {
       guest: this.props.guest,
       map: this.props.mapName,
       multi: this.props.multi,
-      pause: this.props.pause
+      pause: this.props.pause,
+      timerCanStart: this.props.timerCanStart
     });
 
     this.timer = undefined;
@@ -33,7 +34,7 @@ class Timer extends Component {
   }
 
   tick() {
-    if (!this.state.pause) {
+    if (!this.state.pause && this.state.timerCanStart === true) {
       /*
   			function: tick()
 
@@ -93,6 +94,8 @@ class Timer extends Component {
 
   //Use this method to handle props that are being updated in the parent class
   componentWillReceiveProps(nextProps) {
+    let timerCanStart = nextProps.timerCanStart;
+    this.setState({ timerCanStart });
     if (nextProps.pause !== this.props.pause && !this.props.multi) {
       //Perform some operation
       this.setState({ pause: nextProps.pause });
