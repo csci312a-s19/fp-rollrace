@@ -63,6 +63,7 @@ export default function PauseMenu(props) {
         fill={'black'}
         opacity={1}
         onClick={() => props.resume()}
+        className="resume"
       />
       <text
         x={(window.innerWidth - BUTTON_WIDTH / 2) / 2 + 140}
@@ -71,6 +72,7 @@ export default function PauseMenu(props) {
         fontSize="35"
         fill="#FFFF00"
         onClick={() => props.resume()}
+        className="resume"
       >
         Resume
       </text>

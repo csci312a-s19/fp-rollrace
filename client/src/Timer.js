@@ -8,8 +8,8 @@ const Time = styled.div`
   width: 800px;
 `;
 
-const MINUTES = '05';
-const SECONDS = '00';
+const MINUTES = '01';
+const SECONDS = '01';
 
 const START_TIME = {
   minutes: MINUTES,
@@ -67,6 +67,7 @@ class Timer extends Component {
         // stop ticking when there is no more time left
         clearInterval(this.timer);
         this.setState({ minutes: '00', seconds: '00' }); //  render once more with 00:00 on time
+        this.props.boot(true); //Let game know that time is up
         return;
       }
 

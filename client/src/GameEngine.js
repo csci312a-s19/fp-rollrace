@@ -135,6 +135,7 @@ class GameEngine extends Component {
     this.startLoops = this.startLoops.bind(this);
     this.exitToMenu = this.exitToMenu.bind(this);
     this.startCountdown = this.startCountdown.bind(this);
+    this.timeOut = this.timeOut.bind(this);
   }
 
   /*
@@ -976,8 +977,8 @@ class GameEngine extends Component {
 
   // sets gameStartTime and starts the necessary animation loops
   startLoops() {
+    console.log('woof');
     this.setState({ timerCanStart: true });
-    console.log(this.state.timerCanStart);
     this.variables.gameStartTime = new Date().getTime();
     this.variables.mapTranslationStartTime = new Date().getTime();
     (async () => {
@@ -1070,6 +1071,7 @@ class GameEngine extends Component {
   }
 
   componentDidMount() {
+    this.startCountdown();
     if (this.state.multi) {
       this.socket.on('connect', () => {
         /*
@@ -1140,16 +1142,21 @@ class GameEngine extends Component {
     }
   }
 
+  //Ends game when timer reaches zero
+  timeOut() {
+    this.setState({ gameover: true });
+  }
+
   render() {
     const docBody = document.querySelector('body');
     docBody.addEventListener('keypress', e => this.handleKeyPress(e));
-    docBody.addEventListener('DomContentLoaded', this.startCountdown());
+    //docBody.addEventListener('DomContentLoaded', this.startCountdown());
     window.addEventListener(
       'resize',
       this.debounce(this.handleWindowResize, 500)
     );
 
-    let boxes, oneBox, icon;
+    let boxes, oneBox;
 
     if (this.state.multi) {
       // now we need to account for other players that should be rendered
@@ -1179,6 +1186,7 @@ class GameEngine extends Component {
                 cy={player.y}
                 r={SPRITE_SIDE}
                 fill={player.color}
+                fill-opacity="0.4"
               />
             );
           })
@@ -1194,16 +1202,19 @@ class GameEngine extends Component {
         />
       );
     }
-
+    //console.log(this.state.gameover)
     if (!this.state.tutorial) {
       return (
         <>
           <div>
-            <Timer
-              pause={this.state.paused}
-              multi={this.state.multi}
-              timerCanStart={this.state.timerCanStart}
-            />
+            {!this.state.gameover && (
+              <Timer
+                pause={this.state.paused}
+                multi={this.state.multi}
+                timerCanStart={this.state.timerCanStart}
+                boot={bool => this.setState({ gameover: bool })}
+              />
+            )}
           </div>
           <SVGLayer
             viewBox={'0 0 2000 5000'}
@@ -1216,11 +1227,11 @@ class GameEngine extends Component {
               translation={this.state.mapTranslation}
               map={this.props.mapProps.map}
               stroke={this.props.mapProps.strokeWidth}
+              className="map"
             />
-            {icon}
             {this.state.multi && boxes}
             {!this.state.multi && oneBox}
-            <g onClick={() => this.pauseGame()}>
+            <g onClick={() => this.pauseGame()} className="pauseButton">
               <rect
                 key={'pause-bkrnd'}
                 rx={15}
@@ -1264,12 +1275,14 @@ class GameEngine extends Component {
                   height={50}
                   width={50}
                   fill={'pink'}
+                  className="tutorial"
                 />
                 <text x={135} y={45} height={50} width={50}>
                   ?
                 </text>
               </g>
               <g>
+                {/* player icon */}
                 <circle
                   cx={40}
                   cy={140}
@@ -1277,6 +1290,7 @@ class GameEngine extends Component {
                   width={SPRITE_SIDE}
                   r={SPRITE_SIDE / 2}
                   fill={this.state.color}
+                  className="icon"
                 />
               </g>
             </g>

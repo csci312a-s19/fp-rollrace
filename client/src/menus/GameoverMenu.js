@@ -32,6 +32,7 @@ class GameoverMenu extends Component {
           this.setState({ score: resp.map_1 });
         })
         .catch(err => {
+          console.log('run');
           throw Error(err);
         });
     } else {
