@@ -44,6 +44,8 @@ const INITIAL_STATE = {
   startKey: 115, // s key
   changingKey: false,
 
+  timerCanStart: false,
+
   y: 400,
   mapTranslation: 0,
 
@@ -132,6 +134,7 @@ class GameEngine extends Component {
     this.findNextChange = this.findNextChange.bind(this);
     this.startLoops = this.startLoops.bind(this);
     this.exitToMenu = this.exitToMenu.bind(this);
+    this.startCountdown = this.startCountdown.bind(this);
   }
 
   /*
@@ -184,13 +187,15 @@ class GameEngine extends Component {
       this.variables.gameStartTime
     ) {
       this.handleJumpKey();
-    } else if (
-      !this.variables.gameStartTime &&
-      event.keyCode === this.state.startKey
-    ) {
-      this.startLoops();
     } else {
       void 0; // do nothing
+    }
+  }
+  //startsgame after 3 seconds
+
+  startCountdown() {
+    if (!this.variables.gameStartTime) {
+      setTimeout(this.startLoops, 3000);
     }
   }
 
@@ -970,6 +975,8 @@ class GameEngine extends Component {
 
   // sets gameStartTime and starts the necessary animation loops
   startLoops() {
+    this.setState({ timerCanStart: true });
+    console.log(this.state.timerCanStart);
     this.variables.gameStartTime = new Date().getTime();
     this.variables.mapTranslationStartTime = new Date().getTime();
     (async () => {
@@ -1135,7 +1142,7 @@ class GameEngine extends Component {
   render() {
     const docBody = document.querySelector('body');
     docBody.addEventListener('keypress', e => this.handleKeyPress(e));
-
+    docBody.addEventListener('DomContentLoaded', this.startCountdown());
     window.addEventListener(
       'resize',
       this.debounce(this.handleWindowResize, 500)
@@ -1191,7 +1198,11 @@ class GameEngine extends Component {
       return (
         <>
           <div>
-            <Timer pause={this.state.paused} multi={this.state.multi} />
+            <Timer
+              pause={this.state.paused}
+              multi={this.state.multi}
+              timerCanStart={this.state.timerCanStart}
+            />
           </div>
           <SVGLayer
             viewBox={'0 0 2000 5000'}
