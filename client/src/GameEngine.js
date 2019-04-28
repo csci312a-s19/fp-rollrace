@@ -132,6 +132,7 @@ class GameEngine extends Component {
     this.findNextChange = this.findNextChange.bind(this);
     this.startLoops = this.startLoops.bind(this);
     this.exitToMenu = this.exitToMenu.bind(this);
+    this.startCountdown = this.startCountdown.bind(this);
   }
 
   /*
@@ -152,6 +153,12 @@ class GameEngine extends Component {
       clearTimeout(this.timeout);
       this.timeout = setTimeout(fireLater, delay);
     };
+  }
+
+  startCountdown() {
+    if (!this.variables.gameStartTime) {
+      setTimeout(this.startLoops, 3000);
+    }
   }
 
   // Initiates jump
@@ -184,11 +191,6 @@ class GameEngine extends Component {
       this.variables.gameStartTime
     ) {
       this.handleJumpKey();
-    } else if (
-      !this.variables.gameStartTime &&
-      event.keyCode === this.state.startKey
-    ) {
-      this.startLoops();
     } else {
       void 0; // do nothing
     }
@@ -1136,6 +1138,7 @@ class GameEngine extends Component {
   render() {
     const docBody = document.querySelector('body');
     docBody.addEventListener('keypress', e => this.handleKeyPress(e));
+    docBody.addEventListener('DOMContentLoaded', this.startCountdown());
 
     window.addEventListener(
       'resize',
