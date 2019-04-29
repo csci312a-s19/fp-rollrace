@@ -7,7 +7,7 @@ const MENU_WIDTH = 700;
 const BUTTON_HEIGHT = 50;
 const BUTTON_WIDTH = 300;
 
-class GameoverMenu extends Component {
+class GameOverMenu extends Component {
   constructor(props) {
     super(props);
 
@@ -123,10 +123,10 @@ class GameoverMenu extends Component {
   }
 }
 
-GameoverMenu.propTypes = {
+GameOverMenu.propTypes = {
   guest: PropTypes.object,
   restart: PropTypes.func.isRequired,
   exitToMenu: PropTypes.func.isRequired
 };
 
-export default GameoverMenu;
+export default GameOverMenu;

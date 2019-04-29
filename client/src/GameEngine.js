@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import request from 'request-promise-native';
 import io from 'socket.io-client';
 import PauseMenu from './menus/PauseMenu.js';
-import GameoverMenu from './menus/GameoverMenu.js';
+import GameOverMenu from './menus/GameOverMenu.js';
 import ChangeKeyMenu from './menus/ChangeKeyMenu.js';
 import ProgressBar from './ProgressBar.js';
 import { findMapSpan, buildMapHashtable } from './mapParser.js';
@@ -1328,7 +1328,7 @@ class GameEngine extends Component {
               viewBox={'0 0 2000 1000'}
               preserveAspectRatio={'xMinYMin meet'}
             >
-              <GameoverMenu
+              <GameOverMenu
                 windowHeight={this.state.windowHeight}
                 windowWidth={this.state.windowWidth}
                 restart={() => this.restartGame()}
