@@ -116,7 +116,8 @@ Timer.propTypes = {
   guest: PropTypes.object,
   mapName: PropTypes.string,
   multi: PropTypes.bool.isRequired,
-  pause: PropTypes.bool.isRequired
+  pause: PropTypes.bool.isRequired,
+  boot: PropTypes.func.isRequired
 };
 
 export default Timer;
