@@ -39,20 +39,29 @@ function LabeledSlider(props) {
 class Settings extends Component {
   constructor(props) {
     super(props);
-    this.state = { red: 0, green: 0, blue: 0 };
+    this.state = { red: 0, green: 0, blue: 0, nickname: '' };
     this.handleClick = this.handleClick.bind(this);
-    this.selectColor = this.selectColor.bind(this);
     this.makeColor = this.makeColor.bind(this);
+    this.saveChanges = this.saveChanges.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+  }
+
+  handleChange(event) {
+    console.log('hi world');
+    console.log(this.state.nickname);
+    this.setState({ nickname: event.target.value });
   }
   handleClick() {
     this.props.goToMenu();
   }
 
-  selectColor() {
+  saveChanges(event) {
     let color = `rgb(${this.state.red},${this.state.green},${this.state.blue})`;
     this.props.selectedColor(color);
+    event.preventDefault();
+    let name = this.state.nickname;
+    this.props.pickName(name);
   }
-
   makeColor() {
     let color = `rgb(${this.state.red},${this.state.green},${this.state.blue})`;
     return color;
@@ -63,6 +72,21 @@ class Settings extends Component {
       <div>
         <img src={settings} className="settingslogo" alt="settings" />
         <div>
+          <div>
+            <form onSubmit={this.saveChanges}>
+              <label>
+                {' '}
+                Choose Name:
+                <input
+                  type="text"
+                  value={this.state.nickname}
+                  onChange={this.handleChange}
+                  name="nickname"
+                />
+              </label>
+              <input type="submit" value="Save Changes" />
+            </form>
+          </div>
           <svg height="100" width="100">
             <StyledCircle
               cx="50"
@@ -101,7 +125,6 @@ class Settings extends Component {
               this.setState({ blue: value });
             }}
           />
-          <button onClick={this.selectColor}> Select Color </button>
         </div>
       </div>
     );

@@ -89,6 +89,7 @@ class GameEngine extends Component {
       map: this.props.mapName,
       multi: this.props.multi,
       playercolor: this.props.playercolor,
+      playername: this.props.playername,
       restart: false
     });
 
@@ -1172,7 +1173,12 @@ class GameEngine extends Component {
         fill={this.state.playercolor}
       />
     ];
-
+    const nickname = [
+      <text x={this.variables.x - 25} y={this.state.y - 60}>
+        {' '}
+        {this.state.playername}{' '}
+      </text>
+    ];
     if (this.state.multi) {
       // now we need to account for other players that should be rendered
       if (this.state.players !== undefined) {
@@ -1252,6 +1258,7 @@ class GameEngine extends Component {
               className="map"
             />
             {boxes}
+            {nickname}
             <g onClick={() => this.pauseGame()} className="pauseButton">
               <rect
                 key={'pause-bkrnd'}
