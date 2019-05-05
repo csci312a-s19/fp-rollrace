@@ -15,8 +15,8 @@ import {
 
 function MapChoice(props) {
   /*
-    props.func: 
-    the call back that will be used to set the 
+    props.func:
+    the call back that will be used to set the
     map that the player is working on
   */
   const { func } = props;

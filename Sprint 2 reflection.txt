@@ -1,0 +1,15 @@
+Things that went well
+-	We planned out the sprint well, populated the backlog well
+-	We were better about marking things as active
+-	We actually put in tests
+-	A lot better about continuous integration/ working with smaller chunks, everyone committing often
+-	Communicated more/ were a lot better about merging pull requests 
+-	Had a relatively consistent velocity
+
+Things that didn’t go well
+-	Need to comment the code more
+-	Need to be more critical of other people’s code
+-	Need to follow TDD/ and a lot better coverage
+-	Need to meet up more
+-	Separate components more
+-	Put way too much until the last minute (could have gotten more done throughout)

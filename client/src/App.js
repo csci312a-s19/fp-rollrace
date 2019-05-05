@@ -1,16 +1,15 @@
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import request from 'request-promise-native';
-import React, { Component } from 'react';
-import { ReactComponent as title } from './buttonSVGs/title.svg';
-import GameEngine from './GameEngine.js';
+import GameEngine from './Engine/GameEngine.js';
 import { GoogleLogin, GoogleLogout } from 'react-google-login';
-import realbutton from './buttonSVGs/realPlaybutton.svg';
-import settingsbutton from './buttonSVGs/settingsbutton.svg';
-import statsbutton from './buttonSVGs/statsbutton.svg';
-import Settings from './menus/settings.js';
-import Statistics from './menus/Statistics.js';
-import MapChoice from './MapChoice.js';
-import './App.css';
+import { ReactComponent as title } from './MainMenu/buttonSVGs/title.svg';
+import realbutton from './MainMenu/buttonSVGs/realPlaybutton.svg';
+import settingsbutton from './MainMenu/buttonSVGs/settingsbutton.svg';
+import statsbutton from './MainMenu/buttonSVGs/statsbutton.svg';
+import Settings from './MainMenu/Settings.js';
+import Statistics from './MainMenu/Statistics.js';
+import MapChoice from './MainMenu/MapChoice.js';
 
 const GOOGLE_CLIENT_ID =
   '106374852521-g72q4hfca8bc1u3hvjhjial2e1moadri.apps.googleusercontent.com';
@@ -38,7 +37,7 @@ class App extends Component {
     super(props);
     this.state = {
       map: [
-        'm 0, 450 h 359 v -180 h 159 v 100 h 95 v 100 h 143 v -100 h 381 v -100 h 159 v 100 h 238 v -95 h 365 v -95 h 286 v -95 h 143 v 413 h 333 v -95 h 603 v 95 h 238 v -79 h 143 v 175 h 127 v -79 h 143 v -95 h 111 v 16 h 429 v -143 h 111 v 143 h 333 v -111 h 127 v 111 h 270 v 143 h 143 v -79 h 79 v -79 h 238 v -127 h 175 v 127 h 143 v -95 h 127 v 238 h 159 v -111 h 270 v -127 h 159 v 175 h 238 v -111 h 190 v 95 h 127 v -127 h 397 v -127 h 190 v 190 h 206 v -95 h 111 v 79 h 127 v -111 h 111 v 143 h 95 v -127 h 127 v 143 h 127 v -127 h 127 v 318 h 460 v -175 h 127 v 143 h 111 v -222 h 333 v -127 h 412 v -1000 h 500'
+        'm 0, 650 h 359 v -180 h 159 v 100 h 95 v 100 h 143 v -100 h 381 v -100 h 159 v 100 h 238 v -95 h 365 v -95 h 286 v -95 h 143 v 413 h 333 v -95 h 603 v 95 h 238 v -79 h 143 v 175 h 127 v -79 h 143 v -95 h 111 v 16 h 429 v -143 h 111 v 143 h 333 v -111 h 127 v 111 h 270 v 143 h 143 v -79 h 79 v -79 h 238 v -127 h 175 v 127 h 143 v -95 h 127 v 238 h 159 v -111 h 270 v -127 h 159 v 175 h 238 v -111 h 190 v 95 h 127 v -127 h 397 v -127 h 190 v 190 h 206 v -95 h 111 v 79 h 127 v -111 h 111 v 143 h 95 v -127 h 127 v 143 h 127 v -127 h 127 v 318 h 460 v -175 h 127 v 143 h 111 v -222 h 333 v -127 h 412 v -1000 h 500'
       ],
       strokeWidth: 6, // must be an even number for the parsing algorithm
       guest: GUEST_ACCOUNT,

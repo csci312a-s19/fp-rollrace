@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import settings from '../buttonSVGs/settings.svg';
-import return2menu from '../buttonSVGs/return2menu.svg';
+import settings from './buttonSVGs/settings.svg';
+import return2menu from './buttonSVGs/return2menu.svg';
 import styled from 'styled-components';
 
 const ColorLabel = styled.div`
@@ -55,15 +55,19 @@ class Settings extends Component {
     this.props.goToMenu();
   }
 
-  saveChanges(event) {
-    let color = `rgb(${this.state.red},${this.state.green},${this.state.blue})`;
+  selectColor() {
+    const color = `rgb(${this.state.red},${this.state.green},${
+      this.state.blue
+    })`;
     this.props.selectedColor(color);
     event.preventDefault();
     let name = this.state.nickname;
     this.props.pickName(name);
   }
   makeColor() {
-    let color = `rgb(${this.state.red},${this.state.green},${this.state.blue})`;
+    const color = `rgb(${this.state.red},${this.state.green},${
+      this.state.blue
+    })`;
     return color;
   }
 
