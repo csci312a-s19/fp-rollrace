@@ -45,6 +45,7 @@ class App extends Component {
       mode: 'menu',
       multi: false,
       loggedIn: false,
+      nickName: 'guest',
       playercolor: `rgb(${Math.random() * 255},${Math.random() *
         255},${Math.random() * 255})`
     };
@@ -55,12 +56,16 @@ class App extends Component {
     this.handleGoogleLogout = this.handleGoogleLogout.bind(this);
     this.handleStats = this.handleStats.bind(this);
     this.selectColor = this.selectColor.bind(this);
+    this.playerName = this.playerName.bind(this);
   }
 
   selectColor(selectedColor) {
     this.setState({ playercolor: selectedColor });
   }
 
+  playerName(chosenName) {
+    this.setState({ nickName: chosenName });
+  }
   // username and password both strings
   handleStats() {
     if (!this.state.guest) {
@@ -194,6 +199,7 @@ class App extends Component {
             guest={this.state.guest}
             multi={this.state.multi}
             playercolor={this.state.playercolor}
+            playername={this.state.nickName}
           />
         );
 
@@ -203,6 +209,7 @@ class App extends Component {
             <Settings
               goToMenu={this.handleGoToMenu}
               selectedColor={this.selectColor}
+              pickName={this.playerName}
             />
           </div>
         );
