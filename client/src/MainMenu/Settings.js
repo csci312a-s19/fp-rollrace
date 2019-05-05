@@ -49,12 +49,16 @@ class Settings extends Component {
   }
 
   selectColor() {
-    let color = `rgb(${this.state.red},${this.state.green},${this.state.blue})`;
+    const color = `rgb(${this.state.red},${this.state.green},${
+      this.state.blue
+    })`;
     this.props.selectedColor(color);
   }
 
   makeColor() {
-    let color = `rgb(${this.state.red},${this.state.green},${this.state.blue})`;
+    const color = `rgb(${this.state.red},${this.state.green},${
+      this.state.blue
+    })`;
     return color;
   }
 

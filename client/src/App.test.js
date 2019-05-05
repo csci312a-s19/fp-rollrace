@@ -12,27 +12,28 @@ describe('Main Menu rendering tests', () => {
     app.setState({ mode: 'menu' });
   });
 
-  test('Starts in main menu with 3 button buttons', () => {
-    expect(app).toContainExactlyOneMatchingElement('img[alt="play"]');
-    expect(app).toContainExactlyOneMatchingElement('img[alt="settings"]');
-    expect(app).toContainExactlyOneMatchingElement('img[alt="stats"]');
+  test('Starts in main menu with 4 button buttons', () => {
+    expect(app).toContainExactlyOneMatchingElement('.settings');
+    expect(app).toContainExactlyOneMatchingElement('.stats');
+    expect(app).toContainExactlyOneMatchingElement('.single');
+    expect(app).toContainExactlyOneMatchingElement('.multi');
   });
 
   test('Clicking on settings opens settings menu', () => {
-    const settingsButton = app.find('img[alt="settings"]');
+    const settingsButton = app.find('.settings');
     expect(settingsButton).toExist();
     settingsButton.simulate('click');
     expect(app).toContainExactlyOneMatchingElement(Settings);
   });
 
   test('Clicking on statistics opens statistics menu', () => {
-    const statsButton = app.find('img[alt="stats"]');
+    const statsButton = app.find('.stats');
     expect(statsButton).toExist();
     statsButton.simulate('click');
     expect(app).toContainExactlyOneMatchingElement(Statistics);
   });
   test('Clicking on play button opens game', () => {
-    const playButton = app.find('img[alt="play"]');
+    const playButton = app.find('.single');
     expect(playButton).toExist();
     playButton.simulate('click');
     expect(app).toContainExactlyOneMatchingElement(GameEngine);

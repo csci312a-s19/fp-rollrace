@@ -11,6 +11,7 @@ import ChangeKeyMenu from './Menus/ChangeKeyMenu.js';
 import ProgressBar from './ProgressBar.js';
 import Map from './Map.js';
 import Timer from './Timer.js';
+import CurrBestTime from './CurrBestTime.js';
 import Tutorial from './Tutorial.js';
 
 const SVGLayer = styled.svg`
@@ -27,9 +28,9 @@ const jump = {
 // time between updates sent to the server
 const UPDATE_INTERVAL = 20; // milliseconds
 const TOOLBAR_Y = 15;
-const TOOLBAR_X = 900;
+const TOOLBAR_X = 800;
 const ICON_X = 40;
-const GAMEOVER_X = 667;
+const GAMEOVER_X = 9067;
 const UPDATE_TIMEOUT = 20; // time between motionChange updates
 const RENDER_TIMEOUT = 20; // time between rerenders
 const JUMP_SPEED = 0.0013; // acceleration
@@ -40,6 +41,7 @@ const PATH_THRESH = 5;
 const TIME_THRESH = RENDER_TIMEOUT;
 
 const INITIAL_STATE = {
+  score: '',
   dataSent: false,
   tutorial: false,
   paused: false,
@@ -265,7 +267,6 @@ class GameEngine extends Component {
         this.variables.timePaused) /
         1000
     );
-    console.log(finishTime);
 
     if (
       !this.state.guest // exclusive to members
@@ -287,8 +288,7 @@ class GameEngine extends Component {
 
       request
         .put(options)
-        .then(resp => {
-          console.log(resp); // for debugging
+        .then(() => {
           this.setState({ dataSent: true });
         })
         .catch(err => {
@@ -1069,6 +1069,28 @@ class GameEngine extends Component {
   componentDidMount() {
     this.startCountdown();
 
+    if (!this.props.guest) {
+      const options = {
+        url: `${
+          process.env.NODE_ENV === 'development'
+            ? 'http://localhost:3000'
+            : 'https://rollrace.herokuapp.com'
+        }/api/users/stats`,
+        json: true
+      };
+      request
+        .get(options)
+        .then(resp => {
+          this.setState({ score: resp.map_1 });
+        })
+        .catch(err => {
+          //console.log('run');
+          throw Error(err);
+        });
+    } else {
+      this.setState({ score: this.props.guest.map_1 });
+    }
+
     if (this.state.multi) {
       this.socket.on('connect', () => {
         /*
@@ -1235,6 +1257,11 @@ class GameEngine extends Component {
                 restart={this.state.restart}
               />
             )}
+            <CurrBestTime
+              y={TOOLBAR_Y}
+              x={TOOLBAR_X}
+              score={this.state.score}
+            />
 
             <ProgressBar y={TOOLBAR_Y} x={TOOLBAR_X} />
             <Map
@@ -1273,7 +1300,7 @@ class GameEngine extends Component {
                 windowHeight={this.state.windowHeight}
                 restart={() => this.restartGame()}
                 exitToMenu={() => this.props.goToMenu()}
-                guest={this.props.guest}
+                score={this.state.score}
               />
             </SVGLayer>
           ) : (
