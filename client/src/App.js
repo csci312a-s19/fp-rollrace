@@ -10,6 +10,7 @@ import statsbutton from './MainMenu/buttonSVGs/statsbutton.svg';
 import Settings from './MainMenu/Settings.js';
 import Statistics from './MainMenu/Statistics.js';
 import MapChoice from './MainMenu/MapChoice.js';
+import Lobbies from './MainMenu/Lobbies.js';
 
 const GOOGLE_CLIENT_ID =
   '106374852521-g72q4hfca8bc1u3hvjhjial2e1moadri.apps.googleusercontent.com';
@@ -170,10 +171,7 @@ class App extends Component {
                 }
               />
             </div>
-            <MapChoice
-              key={'mapchoice'}
-              func={() => console.log('func called')}
-            />
+            <Lobbies />
             <div>
               <h3>
                 Current User:{' '}

@@ -10,6 +10,8 @@ const passport = require('passport');
 const BearerStrategy = require('passport-http-bearer').Strategy;
 const { OAuth2Client } = require('google-auth-library');
 
+const { lobbies } = require('./seeds/dev/lobbies.js');
+
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Bind all Models to a knex instance.
@@ -158,6 +160,15 @@ app.get(
       }, next);
   }
 );
+
+/* get list of current lobbies */
+app.get('/api/lobbies/', (request, response) => {
+  /* send back the lobbies that are not full yet */
+  const open = lobbies.filter(lobby => {
+    return lobby.nPlayers < 3;
+  }); /* Will the next line run before this one? */
+  response.send(open);
+});
 
 // Simple error handler.
 app.use((error, request, response, next) => {
