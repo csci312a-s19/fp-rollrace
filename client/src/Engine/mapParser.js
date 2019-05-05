@@ -27,7 +27,16 @@ export const findMapSpan = allPaths => {
   return xMax;
 };
 
-// Bug is need last of map to be a V or else small cut off.  Does not affect performance though.  Need to make sure in alternating order
+/*
+ * Outputs a hashtable for an svg path.  Expects path to be written in
+ * alternating h, v order.
+ *
+ * @params: xMax: int.  Max x coordinate
+ *          strokeWidth: int.  Stroke width of the path
+ *          allPaths: Array<string> our SVG path strings
+ *
+ * @outputs: Array<Array<String, int>>> Our hashtable
+ */
 export const buildMapHashtable = (xMax, strokeWidth, allPaths) => {
   const xRange = xMax;
   const hashedPaths = Array.apply(null, Array(xRange)).map(() => []); // array of arrays

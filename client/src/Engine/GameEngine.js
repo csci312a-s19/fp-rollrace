@@ -3,13 +3,15 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import request from 'request-promise-native';
 import io from 'socket.io-client';
-import PauseMenu from './menus/PauseMenu.js';
-import GameoverMenu from './menus/GameoverMenu.js';
-import ChangeKeyMenu from './menus/ChangeKeyMenu.js';
-import ProgressBar from './ProgressBar.js';
 import { findMapSpan, buildMapHashtable } from './mapParser.js';
+import PauseMenu from './Menus/PauseMenu.js';
+import PauseButton from './PauseButton.js';
+import GameoverMenu from './Menus/GameoverMenu.js';
+import ChangeKeyMenu from './Menus/ChangeKeyMenu.js';
+import ProgressBar from './ProgressBar.js';
 import Map from './Map.js';
 import Timer from './Timer.js';
+import CurrBestTime from './CurrBestTime.js';
 import Tutorial from './Tutorial.js';
 
 const SVGLayer = styled.svg`
@@ -25,8 +27,10 @@ const jump = {
 
 // time between updates sent to the server
 const UPDATE_INTERVAL = 20; // milliseconds
-
 const TOOLBAR_Y = 15;
+const TOOLBAR_X = 800;
+const ICON_X = 40;
+const GAMEOVER_X = 9067;
 const UPDATE_TIMEOUT = 20; // time between motionChange updates
 const RENDER_TIMEOUT = 20; // time between rerenders
 const JUMP_SPEED = 0.0013; // acceleration
@@ -37,6 +41,7 @@ const PATH_THRESH = 5;
 const TIME_THRESH = RENDER_TIMEOUT;
 
 const INITIAL_STATE = {
+  score: '',
   dataSent: false,
   tutorial: false,
   paused: false,
@@ -44,14 +49,10 @@ const INITIAL_STATE = {
   jumpKey: 32, // space bar
   startKey: 115, // s key
   changingKey: false,
-
   timerCanStart: false,
-
-  y: 400,
+  y: 600,
   mapTranslation: 0,
   hideMenu: false,
-
-  windowWidth: window.innerWidth,
   windowHeight: window.innerHeight,
   players: undefined,
   color: `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() *
@@ -60,22 +61,17 @@ const INITIAL_STATE = {
 
 const INITIAL_VARIABLES = {
   gameStartTime: undefined,
-
   x: 200,
   minY: 1000, // should loop over all of map or whatever to find this.
-
   // will take an object of the following form {time: , event: } options for event are block, go, land, and fall
   motionChange: undefined,
-
   yStart: INITIAL_STATE.y,
   jumpState: jump.STOP,
   jumpStartTime: undefined,
   descendStartTime: undefined,
-
   mapTranslationStart: 0,
   atWall: false,
   mapTranslationStartTime: undefined,
-
   pauseOffsetStart: undefined,
   timePaused: 0
 };
@@ -168,7 +164,6 @@ class GameEngine extends Component {
     this.variables.yStart = this.getY();
     this.variables.jumpState = jump.UP;
     this.variables.jumpStartTime = new Date().getTime();
-    this.variables.motionChange = undefined;
     (async () => {
       this.variables.motionChange = this.findNextChange();
     })();
@@ -208,7 +203,6 @@ class GameEngine extends Component {
   // Resets our current window dimentions
   handleWindowResize() {
     this.setState({
-      windowWidth: window.innerWidth,
       windowHeight: window.innerHeight
     });
   }
@@ -226,7 +220,6 @@ class GameEngine extends Component {
      * (person may have changes window while playing so can't really make a default for it)
      */
     const restartState = Object.assign({}, INITIAL_STATE, {
-      windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
       restart: true
     });
@@ -271,7 +264,7 @@ class GameEngine extends Component {
   sendEndgameData() {
     const finishTime = parseInt(
       (new Date().getTime() -
-        this.variables.gameStartTime +
+        this.variables.gameStartTime -
         this.variables.timePaused) /
         1000
     );
@@ -296,8 +289,7 @@ class GameEngine extends Component {
 
       request
         .put(options)
-        .then(resp => {
-          console.log(resp); // for debugging
+        .then(() => {
           this.setState({ dataSent: true });
         })
         .catch(err => {
@@ -1043,7 +1035,7 @@ class GameEngine extends Component {
     this.renderInterval = setInterval(() => {
       if (this.variables.motionChange !== 'nothing' && !this.state.paused) {
         // 666 is a bad constant and should be declared elsewhere!
-        if (this.getX() >= this.mapLength - 667) {
+        if (this.getX() >= this.mapLength - GAMEOVER_X) {
           clearInterval(this.renderInterval);
           clearInterval(this.updateInterval);
           this.setState({
@@ -1077,6 +1069,28 @@ class GameEngine extends Component {
 
   componentDidMount() {
     this.startCountdown();
+
+    if (!this.props.guest) {
+      const options = {
+        url: `${
+          process.env.NODE_ENV === 'development'
+            ? 'http://localhost:3000'
+            : 'https://rollrace.herokuapp.com'
+        }/api/users/stats`,
+        json: true
+      };
+      request
+        .get(options)
+        .then(resp => {
+          this.setState({ score: resp.map_1 });
+        })
+        .catch(err => {
+          //console.log('run');
+          throw Error(err);
+        });
+    } else {
+      this.setState({ score: this.props.guest.map_1 });
+    }
 
     if (this.state.multi) {
       this.socket.on('connect', () => {
@@ -1146,6 +1160,7 @@ class GameEngine extends Component {
         });
       });
     }
+    this.handleWindowResize();
   }
 
   //Ends game when timer reaches zero
@@ -1173,12 +1188,12 @@ class GameEngine extends Component {
         fill={this.state.playercolor}
       />
     ];
-    const nickname = [
+    const nickname = (
       <text x={this.variables.x - 25} y={this.state.y - 60}>
         {' '}
         {this.state.playername}{' '}
       </text>
-    ];
+    );
     if (this.state.multi) {
       // now we need to account for other players that should be rendered
       if (this.state.players !== undefined) {
@@ -1207,24 +1222,11 @@ class GameEngine extends Component {
     if (!this.state.tutorial) {
       return (
         <>
-          <div>
-            {!this.state.gameover && (
-              <Timer
-                pause={this.state.paused}
-                multi={this.state.multi}
-                timerCanStart={this.state.timerCanStart}
-                boot={bool => this.setState({ gameover: bool })}
-                restart={this.state.restart}
-              />
-            )}
-          </div>
           {/* conditional rendering when the pause button is toggled */}
           {this.state.paused &&
             this.state.hideMenu &&
             this.state.changingKey && (
               <ChangeKeyMenu
-                windowHeight={this.state.windowHeight}
-                windowWidth={this.state.windowWidth}
                 jumpKey={this.state.jumpKey}
                 showMenu={() =>
                   this.setState({ changingKey: false, hideMenu: false })
@@ -1248,9 +1250,26 @@ class GameEngine extends Component {
             viewBox={'0 0 2000 5000'}
             preserveAspectRatio={'xMaxYMin slice'}
             height={this.state.windowHeight}
-            width={this.state.windowWidth}
+            width={this.state.windowHeight * 2}
           >
-            <ProgressBar y={TOOLBAR_Y} />
+            {!this.state.gameover && (
+              <Timer
+                y={TOOLBAR_Y}
+                x={TOOLBAR_X}
+                pause={this.state.paused}
+                multi={this.state.multi}
+                timerCanStart={this.state.timerCanStart}
+                boot={bool => this.setState({ gameover: bool })}
+                restart={this.state.restart}
+              />
+            )}
+            <CurrBestTime
+              y={TOOLBAR_Y}
+              x={TOOLBAR_X}
+              score={this.state.score}
+            />
+
+            <ProgressBar y={TOOLBAR_Y} x={TOOLBAR_X} />
             <Map
               translation={this.state.mapTranslation}
               map={this.props.mapProps.map}
@@ -1259,69 +1278,23 @@ class GameEngine extends Component {
             />
             {boxes}
             {nickname}
-            <g onClick={() => this.pauseGame()} className="pauseButton">
-              <rect
-                key={'pause-bkrnd'}
-                rx={15}
-                ry={15}
-                x={15}
-                y={15}
-                height={50}
-                width={50}
-                fill={'black'}
+            <PauseButton
+              x={ICON_X}
+              handleClick={() => this.pauseGame()}
+              className="pauseButton"
+            />
+            {/* tutorial used to be here */}
+            <g>
+              {/* player icon */}
+              <circle
+                cx={ICON_X}
+                cy={TOOLBAR_Y + 100}
+                height={SPRITE_SIDE}
+                width={SPRITE_SIDE}
+                r={SPRITE_SIDE / 2}
+                fill={this.state.playercolor}
+                className="icon"
               />
-              <rect
-                key={'lft-line'}
-                rx={5}
-                ry={5}
-                x={28}
-                y={28}
-                height={25}
-                width={10}
-                fill={'white'}
-              />
-              <rect
-                key={'rt-line'}
-                rx={5}
-                ry={5}
-                x={43}
-                y={28}
-                height={25}
-                width={10}
-                fill={'white'}
-              />
-            </g>
-            <g onClick={() => this.pauseGame()}>
-              <g onClick={() => this.setState({ tutorial: true })}>
-                {' '}
-                {/* pauses game because within pausing div*/}
-                <rect
-                  key={'help-me'}
-                  rx={15}
-                  ry={15}
-                  x={115}
-                  y={15}
-                  height={50}
-                  width={50}
-                  fill={'pink'}
-                  className="tutorial"
-                />
-                <text x={135} y={45} height={50} width={50}>
-                  ?
-                </text>
-              </g>
-              <g>
-                {/* player icon */}
-                <circle
-                  cx={40}
-                  cy={140}
-                  height={SPRITE_SIDE}
-                  width={SPRITE_SIDE}
-                  r={SPRITE_SIDE / 2}
-                  fill={this.state.playercolor}
-                  className="icon"
-                />
-              </g>
             </g>
           </SVGLayer>
 
@@ -1332,10 +1305,9 @@ class GameEngine extends Component {
             >
               <GameoverMenu
                 windowHeight={this.state.windowHeight}
-                windowWidth={this.state.windowWidth}
                 restart={() => this.restartGame()}
                 exitToMenu={() => this.props.goToMenu()}
-                guest={this.props.guest}
+                score={this.state.score}
               />
             </SVGLayer>
           ) : (
@@ -1348,6 +1320,28 @@ class GameEngine extends Component {
     }
   }
 }
+
+/* tutorial:
+ *<g onClick={() => this.pauseGame()}>
+ *  <g onClick={() => this.setState({ tutorial: true })}>
+ *    {' '}
+ *    {/ pauses game because within pausing div/}
+ *    <rect
+ *      key={'help-me'}
+ *      rx={15}
+ *      ry={15}
+ *      x={115}
+ *      y={15}
+ *      height={50}
+ *      width={50}
+ *      fill={'pink'}
+ *    />
+ *    <text x={135} y={45} height={50} width={50}>
+ *      ?
+ *    </text>
+ *  </g>
+ *</g>
+ */
 
 GameEngine.propTypes = {
   guest: PropTypes.object,

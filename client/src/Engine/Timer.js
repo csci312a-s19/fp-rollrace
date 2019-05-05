@@ -2,10 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
-const Time = styled.div`
-  margin: 0 auto;
-  text-align: center;
-  width: 800px;
+const Text = styled.text`
+  margin-top: 10px
+  font-size: 30px;
 `;
 
 const MINUTES = '00';
@@ -21,8 +20,6 @@ class Timer extends Component {
     super(props);
 
     this.state = Object.assign({}, START_TIME, {
-      guest: this.props.guest,
-      map: this.props.mapName,
       multi: this.props.multi,
       pause: this.props.pause,
       timerCanStart: this.props.timerCanStart,
@@ -121,13 +118,17 @@ class Timer extends Component {
   }
 
   render() {
-    return <Time>{`${this.state.minutes}:${this.state.seconds}`}</Time>;
+    return (
+      <Text x={this.props.x + 60} y={this.props.y + 25}>{`${
+        this.state.minutes
+      }:${this.state.seconds}`}</Text>
+    );
   }
 }
 
 Timer.propTypes = {
-  guest: PropTypes.object,
-  mapName: PropTypes.string,
+  x: PropTypes.number.isRequired,
+  y: PropTypes.number.isRequired,
   multi: PropTypes.bool.isRequired,
   pause: PropTypes.bool.isRequired,
   boot: PropTypes.func.isRequired
