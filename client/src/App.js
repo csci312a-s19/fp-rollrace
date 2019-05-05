@@ -24,6 +24,14 @@ const CenteredDiv = styled.div`
   padding: 0px;
 `;
 
+const StyledButton = styled.button`
+  background-color: #008cba;
+  font-size: 24px;
+  border-radius: 12px;
+  border: 2px solid #555555;
+  font-family: monospace;
+`;
+
 const Background = styled.div`
   background-color: black;
   margin: 0px;
@@ -168,43 +176,31 @@ class App extends Component {
             </CenteredDiv>
             <CenteredDiv>
               <div>
-                <button
-                  size="lg"
-                  color="success"
-                  className="single"
+                <StyledButton
                   onClick={() => this.setState({ mode: 'game', multi: false })}
                 >
-                  PLAY
-                </button>
+                  Play
+                </StyledButton>
                 &nbsp;&nbsp;&nbsp;
-                <button
-                  size="lg"
-                  color="success"
-                  className="multi"
+                <StyledButton
                   onClick={() => this.setState({ mode: 'game', multi: true })}
                 >
                   Play Multi
-                </button>
+                </StyledButton>
                 &nbsp;&nbsp;&nbsp;
-                <button
-                  size="lg"
-                  color="success"
-                  className="settings"
+                <StyledButton
                   onClick={() => this.setState({ mode: 'settings' })}
                 >
                   Settings
-                </button>{' '}
+                </StyledButton>{' '}
                 &nbsp;&nbsp;&nbsp;
-                <button
-                  size="lg"
-                  color="success"
-                  className="stats"
+                <StyledButton
                   onClick={() =>
                     this.setState({ mode: 'stats' }, this.handleStats)
                   }
                 >
                   Statistics
-                </button>
+                </StyledButton>
                 {'  '}
               </div>
             </CenteredDiv>
