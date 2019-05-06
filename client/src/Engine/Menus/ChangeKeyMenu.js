@@ -51,7 +51,7 @@ class ChangeKeyMenu extends Component {
 
 ChangeKeyMenu.propTypes = {
   showMenu: PropTypes.bool.isRequired,
-  jumpKey: PropTypes.string.isRequired,
+  jumpKey: PropTypes.number.isRequired,
   showModal: PropTypes.bool.isRequired
 };
 
