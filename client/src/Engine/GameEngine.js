@@ -54,10 +54,9 @@ class GameEngine extends Component {
 
     if (this.props.multi) {
       /*
-       * each game will have a socket to connect back to the server
-       * store the other players as a member for THIS player
+       * connect the socket to the lobby of the users choice
        */
-      this.socket = io.connect();
+      this.socket = io.connect(this.props.lobby);
     }
 
     this.timeout = null;
@@ -472,6 +471,8 @@ class GameEngine extends Component {
     if (this.props.multi) {
       this.socket.disconnect();
     }
+    /* this will clear the lobby chosen after the game has ended */
+    this.props.resetLobby();
   }
 
   componentDidMount() {
@@ -765,6 +766,7 @@ class GameEngine extends Component {
  */
 
 GameEngine.propTypes = {
+  lobby: PropTypes.string.isRequired,
   guest: PropTypes.object,
   mapProps: PropTypes.object.isRequired,
   multi: PropTypes.bool.isRequired,

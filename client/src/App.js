@@ -231,6 +231,10 @@ class App extends Component {
              **/
             return (
               <GameEngine
+                resetLobby={() => {
+                  this.setState({ lobby: '' });
+                }}
+                lobby={this.state.lobby}
                 mapProps={Object.assign(
                   {},
                   { map: this.state.map, strokeWidth: this.state.strokeWidth }
@@ -249,6 +253,7 @@ class App extends Component {
         } else {
           return (
             <GameEngine
+              lobby={''}
               mapProps={Object.assign(
                 {},
                 { map: this.state.map, strokeWidth: this.state.strokeWidth }

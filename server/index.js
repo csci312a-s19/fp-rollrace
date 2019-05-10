@@ -15,19 +15,23 @@ const io = require('socket.io')(server);
  	NOTE: emitting anything requires sending the data
  	in a JS object
 */
-const players = new Map();
-io.on('connection', socket => {
+
+/* Map for list of people playing in galactus lobby */
+const gPlayers = new Map();
+
+const galactus = io.of('/galactus');
+galactus.on('connection', socket => {
   socket.on('NEW_PLAYER', (player, fn) => {
     /*
-			add the new player to the list of players
-			and them emit the new list of players
-		*/
-    players.set(socket.id, player);
+      add the new player to the list of players
+      and them emit the new list of players
+    */
+    gPlayers.set(socket.id, player);
 
     /*
-			tell this newly connected socket about the other players
-			player
-		*/
+      tell this newly connected socket about the other players
+      player
+    */
     const arr = Array.from(players.values()).filter(playerData => {
       return playerData.key !== socket.id;
     });
@@ -38,7 +42,7 @@ io.on('connection', socket => {
   });
 
   socket.on('CHANGE_POS', (player, fn) => {
-    players.set(socket.id, player);
+    gPlayers.set(socket.id, player);
     const arr = Array.from(players.values()).filter(playerData => {
       return playerData.key !== socket.id;
     });
@@ -50,9 +54,9 @@ io.on('connection', socket => {
 
   socket.on('disconnect', () => {
     // eliminate the player from the container of players
-    players.delete(socket.id);
-    if (players.length === 0) {
-      players.clear();
+    gPlayers.delete(socket.id);
+    if (gPlayers.length === 0) {
+      gPlayers.clear();
     }
     // broadcast the updated list to the rest of the players
     io.emit('BROADCAST', players);

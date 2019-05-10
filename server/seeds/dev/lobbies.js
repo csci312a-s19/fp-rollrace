@@ -1,31 +1,15 @@
 const lobbies = [
   {
-    nPlayers: 2,
+    nPlayers: 0,
     lName: 'Galactus'
   },
   {
-    nPlayers: 3,
+    nPlayers: 0,
     lName: 'Abraxas'
   },
   {
-    nPlayers: 1,
-    lName: 'Doom'
-  },
-  {
     nPlayers: 0,
-    lName: 'Legion'
-  },
-  {
-    nPlayers: 2,
-    lName: 'Grey'
-  },
-  {
-    nPlayers: 1,
-    lName: 'Ronan'
-  },
-  {
-    nPlayers: 2,
-    lName: 'Ego'
+    lName: 'Doom'
   }
 ];
 
