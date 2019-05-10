@@ -32,7 +32,7 @@ galactus.on('connection', socket => {
       tell this newly connected socket about the other players
       player
     */
-    const arr = Array.from(players.values()).filter(playerData => {
+    const arr = Array.from(gPlayers.values()).filter(playerData => {
       return playerData.key !== socket.id;
     });
 
@@ -43,7 +43,7 @@ galactus.on('connection', socket => {
 
   socket.on('CHANGE_POS', (player, fn) => {
     gPlayers.set(socket.id, player);
-    const arr = Array.from(players.values()).filter(playerData => {
+    const arr = Array.from(gPlayers.values()).filter(playerData => {
       return playerData.key !== socket.id;
     });
 
@@ -59,6 +59,6 @@ galactus.on('connection', socket => {
       gPlayers.clear();
     }
     // broadcast the updated list to the rest of the players
-    io.emit('BROADCAST', players);
+    io.emit('BROADCAST', gPlayers);
   });
 });
