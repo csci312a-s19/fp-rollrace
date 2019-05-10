@@ -62,3 +62,97 @@ galactus.on('connection', socket => {
     io.emit('BROADCAST', gPlayers);
   });
 });
+
+/* Map for list of people playing in galactus lobby */
+const aPlayers = new Map();
+
+const abraxas = io.of('/abraxas');
+abraxas.on('connection', socket => {
+  socket.on('NEW_PLAYER', (player, fn) => {
+    /*
+      add the new player to the list of players
+      and them emit the new list of players
+    */
+    aPlayers.set(socket.id, player);
+
+    /*
+      tell this newly connected socket about the other players
+      player
+    */
+    const arr = Array.from(aPlayers.values()).filter(playerData => {
+      return playerData.key !== socket.id;
+    });
+
+    fn(arr);
+    // tell all other sockets about the player that just joined
+    socket.broadcast.emit('PLAYER', arr);
+  });
+
+  socket.on('CHANGE_POS', (player, fn) => {
+    aPlayers.set(socket.id, player);
+    const arr = Array.from(aPlayers.values()).filter(playerData => {
+      return playerData.key !== socket.id;
+    });
+
+    fn(arr);
+    // tell all other sockets about the player that just joined
+    socket.broadcast.emit('CHANGE_POS', arr);
+  });
+
+  socket.on('disconnect', () => {
+    // eliminate the player from the container of players
+    aPlayers.delete(socket.id);
+    if (aPlayers.length === 0) {
+      aPlayers.clear();
+    }
+    // broadcast the updated list to the rest of the players
+    io.emit('BROADCAST', aPlayers);
+  });
+});
+
+/* Map for list of people playing in galactus lobby */
+const dPlayers = new Map();
+
+const doom = io.of('/doom');
+doom.on('connection', socket => {
+  socket.on('NEW_PLAYER', (player, fn) => {
+    /*
+      add the new player to the list of players
+      and them emit the new list of players
+    */
+    dPlayers.set(socket.id, player);
+
+    /*
+      tell this newly connected socket about the other players
+      player
+    */
+    const arr = Array.from(dPlayers.values()).filter(playerData => {
+      return playerData.key !== socket.id;
+    });
+
+    fn(arr);
+    // tell all other sockets about the player that just joined
+    socket.broadcast.emit('PLAYER', arr);
+  });
+
+  socket.on('CHANGE_POS', (player, fn) => {
+    dPlayers.set(socket.id, player);
+    const arr = Array.from(dPlayers.values()).filter(playerData => {
+      return playerData.key !== socket.id;
+    });
+
+    fn(arr);
+    // tell all other sockets about the player that just joined
+    socket.broadcast.emit('CHANGE_POS', arr);
+  });
+
+  socket.on('disconnect', () => {
+    // eliminate the player from the container of players
+    dPlayers.delete(socket.id);
+    if (dPlayers.length === 0) {
+      dPlayers.clear();
+    }
+    // broadcast the updated list to the rest of the players
+    io.emit('BROADCAST', dPlayers);
+  });
+});
