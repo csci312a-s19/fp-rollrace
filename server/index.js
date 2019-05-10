@@ -58,6 +58,7 @@ galactus.on('connection', socket => {
     if (gPlayers.length === 0) {
       gPlayers.clear();
     }
+    console.log('disconnected');
     // broadcast the updated list to the rest of the players
     io.emit('BROADCAST', gPlayers);
   });

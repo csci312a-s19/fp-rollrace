@@ -482,6 +482,7 @@ class GameEngine extends Component {
 
     if (this.state.multi) {
       this.socket.on('connect', () => {
+        console.log('connected');
         /*
           Pass the player and a call back that will give back
           the a list of players.
@@ -587,14 +588,15 @@ class GameEngine extends Component {
         fill={this.state.playercolor}
       />
     ];
+    console.log(boxes);
 
     if (this.state.multi) {
       // now we need to account for other players that should be rendered
       if (this.state.players !== undefined) {
+        console.log(this.state.players);
         // TODO: need unique key for players
         boxes.unshift(
           this.state.players.map(player => {
-            console.log(this.getMapTranslation() - player.mapTrans + 200);
             return (
               <circle
                 key={player.id}

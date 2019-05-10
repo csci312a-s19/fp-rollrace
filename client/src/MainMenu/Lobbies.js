@@ -97,7 +97,7 @@ class Lobbies extends Component {
           <Card
             key={lobby.lName}
             onClick={() => {
-              this.props.chosen(lobby.lName);
+              this.props.chosen(`/${lobby.lName.toLowerCase()}`);
             }}
           >
             <Container>
