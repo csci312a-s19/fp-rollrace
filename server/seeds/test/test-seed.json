@@ -6,7 +6,9 @@
     "total_games": "10",
     "total_multi_games": "9",
     "total_multi_wins": "9",
-    "map_1": "120"
+    "map_0": "120",
+    "map_1": "-1",
+    "map_2": "-1"
   },
   {
     "googleId": "111216000333337153369",
@@ -15,6 +17,8 @@
     "total_games": "10",
     "total_multi_games": "2",
     "total_multi_wins": "3",
-    "map_1": "12099"
+    "map_0": "12099",
+    "map_1": "-1",
+    "map_2": "-1"
   }
 ]

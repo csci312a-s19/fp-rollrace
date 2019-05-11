@@ -13,35 +13,59 @@ const StyledP = styled.p`
 class ChangeKeyMenu extends Component {
   constructor(props) {
     super(props);
-    this.state = { currentKey: this.props.jumpKey };
+    this._isMounted = false;
+    this.state = {
+      jumpKey: undefined
+    };
+    this.handleKeyChange = this.handleKeyChange.bind(this);
+    this.handleExit = this.handleExit.bind(this);
   }
 
-  // Give an update if the props change so that the user can see
-  // which key they chose before going back to pause menu.
+  componentDidMount() {
+    this._isMounted = true;
+    document.body.addEventListener('keypress', e => this.handleKeyChange(e));
+  }
 
-  static getDerivedStateFromProps(props, state) {
-    if (props.jumpKey !== state.currentKey) {
-      return {
-        currentKey: props.jumpKey
-      };
+  handleExit() {
+    const newKey = this.state.jumpKey;
+    this.props.goBack(newKey);
+  }
+
+  handleKeyChange(event) {
+    if (this._isMounted) {
+      this.setState({ jumpKey: event.keyCode });
     }
-    return null;
+  }
+
+  componentWillUnmount() {
+    document.body.removeEventListener('keypress', e => this.handleKeyChange(e));
+    this._isMounted = false;
   }
 
   render() {
-    const { showMenu, jumpKey, showModal } = this.props;
+    const { showModal, currentKey } = this.props;
+    const { jumpKey } = this.state;
     return (
       <ModalProvider>
         <StyledModal isOpen={showModal}>
           <StyledP>Press New jumpKey</StyledP>
           <StyledP>
             {`Current Key: ${
-              jumpKey === 32
+              currentKey === 32
                 ? 'SPACE'
-                : String.fromCharCode(this.state.currentKey).toUpperCase()
+                : String.fromCharCode(currentKey).toUpperCase()
             }`}
           </StyledP>
-          <ModalStyledButton onClick={showMenu}>Back</ModalStyledButton>
+          {jumpKey && (
+            <StyledP>
+              {`Selected Key: ${
+                jumpKey === 32
+                  ? 'SPACE'
+                  : String.fromCharCode(jumpKey).toUpperCase()
+              }`}
+            </StyledP>
+          )}
+          <ModalStyledButton onClick={this.handleExit}>Back</ModalStyledButton>
         </StyledModal>
       </ModalProvider>
     );
@@ -49,8 +73,7 @@ class ChangeKeyMenu extends Component {
 }
 
 ChangeKeyMenu.propTypes = {
-  showMenu: PropTypes.bool.isRequired,
-  jumpKey: PropTypes.number.isRequired,
+  goBack: PropTypes.func.isRequired,
   showModal: PropTypes.bool.isRequired
 };
 

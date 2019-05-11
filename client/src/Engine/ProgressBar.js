@@ -1,80 +1,53 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
-const WIDTH = 200; // Set maximum width of progressbar
-const HEIGHT = 20; // bar height
+const WIDTH = 300; // Set maximum width of progressbar
+const HEIGHT = 30; // bar height
 const POS_OFFSET = 35;
-const SPRITE_OFFSET = 45;
+const SPRITE_OFFSET = 50;
 
-class ProgressBar extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      currentX: this.props.currX // save the position into state so that it can be updated
-    };
-  }
-
-  // Listen to prop changes that affect the state of our component
-  // when the current x position of player changes it updates the state.
-  static getDerivedStateFromProps(props, state) {
-    if (props.currX !== state.currentX) {
-      return {
-        currentX: props.currX
-      };
-    }
-    return null;
-  }
-
-  render() {
-    /*
+const ProgressBar = props => {
+  const { currX, pathLen, spriteColor, x, y } = props;
+  /*
     Finds how far the player is as perecntage of the entire path
     Translate that value to the distance from the start the sprite's icon will be on
     the progress bar.
     Currently it only supports single player mode.
 
-    */
-    const percentage = this.state.currentX / this.props.pathLen;
-    let currentPos = this.props.x + WIDTH * percentage;
-    if (!currentPos) {
-      currentPos = this.props.x;
-    }
-
-    return (
-      <g>
-        <rect
-          fill={'#ffffff'}
-          width={WIDTH}
-          height={HEIGHT}
-          x={this.props.x}
-          y={this.props.y + POS_OFFSET}
-        />
-
-        {/* sprite 1 */}
-        <ellipse
-          fill={'#ff0000'}
-          cx={currentPos} /*update player one position*/
-          cy={this.props.y + SPRITE_OFFSET} /* offset */
-          rx={2.0}
-          ry={9.0}
-        />
-
-        {/* sprite 2 */}
-        <ellipse
-          fill={'#00ff00'}
-          cx={currentPos} /*update player two position*/
-          cy={this.props.y + SPRITE_OFFSET}
-          rx={2.0}
-          ry={9.0}
-        />
-      </g>
-    );
+  */
+  const percentage = currX / pathLen;
+  let currentPos = x + WIDTH * percentage;
+  if (!currentPos) {
+    currentPos = x;
   }
-}
+
+  return (
+    <g>
+      <rect
+        fill={'#ffffff'}
+        width={WIDTH}
+        height={HEIGHT}
+        x={x}
+        y={y + POS_OFFSET}
+      />
+
+      {/* sprite 1 */}
+      <ellipse
+        fill={spriteColor}
+        cx={currentPos} /*update player one position*/
+        cy={y + SPRITE_OFFSET} /* offset */
+        rx={5.0}
+        ry={15.0}
+      />
+    </g>
+  );
+};
 
 ProgressBar.propTypes = {
   y: PropTypes.number.isRequired,
   currX: PropTypes.number,
-  x: PropTypes.number.isRequired
+  x: PropTypes.number.isRequired,
+  spriteColor: PropTypes.string
 };
 
 export default ProgressBar;

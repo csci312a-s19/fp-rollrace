@@ -6,10 +6,30 @@ exports.up = function(knex, Promise) {
     table.string('googleId').notNullable();
     table.string('givenName').notNullable();
     table.text('email').notNullable();
-    table.integer('total_games').notNullable();
-    table.integer('total_multi_games').notNullable();
-    table.integer('total_multi_wins').notNullable();
-    table.integer('map_1').notNullable();
+    table
+      .integer('total_games')
+      .notNullable()
+      .defaultTo(0);
+    table
+      .integer('total_multi_games')
+      .notNullable()
+      .defaultTo(0);
+    table
+      .integer('total_multi_wins')
+      .notNullable()
+      .defaultTo(0);
+    table
+      .integer('map_0')
+      .notNullable()
+      .defaultTo(-1);
+    table
+      .integer('map_1')
+      .notNullable()
+      .defaultTo(-1);
+    table
+      .integer('map_2')
+      .notNullable()
+      .defaultTo(-1);
   });
 };
 

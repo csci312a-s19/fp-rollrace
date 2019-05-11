@@ -1,6 +1,6 @@
 /*
  * Finds the boundaries of all our map paths so that we can allocate enough
- * space for our map hash table.
+ * space for our map hash table.  Assumes the map starts at X = 0
  *
  * @params: allPaths: Array<string> our SVG path strings
  *

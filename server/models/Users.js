@@ -19,7 +19,9 @@ class Users extends Model {
         email: { type: 'string' },
         total_games: { type: 'integer' },
         total_multi_games: { type: 'integer' },
-        map_1: { type: 'integer' }
+        map_0: { type: 'integer' },
+        map_1: { type: 'integer' },
+        map_2: { type: 'integer' }
       }
     };
   }

@@ -1,12 +1,27 @@
 const http = require('http');
-const { app } = require('./server');
+const { app, maps } = require('./server');
+const fs = require('fs');
+const path = require('path');
+const util = require('util');
 
-const server = http.createServer(app).listen(process.env.PORT || 3001); // switch these back in production
-console.log('Listening on port %d', server.address().port); // eslint-disable-line no-console
-
-const io = require('socket.io')(server);
+const readFile = util.promisify(fs.readFile);
 
 /*
+ * First we populate the maps map (lol), then we create the server.  The map
+ * comes from our server file and uses tha maps map to fulfull get requests.
+ * we populate the maps here to ensure the map is populated the second our
+ * our client has loaded the page.
+ */
+readFile(path.join(__dirname, 'maps/maps.json'))
+  .then(contents => {
+    const mapsArr = JSON.parse(contents);
+    mapsArr.forEach(map => maps.set(map.mapId, map));
+
+    const server = http.createServer(app).listen(process.env.PORT || 3001); // 3002?); switch these back in production
+    console.log('Listening on port %d', server.address().port); // eslint-disable-line no-console
+    const io = require('socket.io')(server); // eslint-disable-line global-require
+
+    /*
 	use map to store players
 	given that socket ids are unique
 	this helps remove players

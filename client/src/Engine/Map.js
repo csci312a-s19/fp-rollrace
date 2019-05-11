@@ -14,7 +14,7 @@ const MapPath = styled.path`
 export default function Map(props) {
   return (
     <g transform={`translate(${props.translation} 0)`}>
-      {props.map.map((curr, index) => (
+      {props.path.map((curr, index) => (
         <MapPath key={`${index}mappath`} stroke={props.stroke} d={curr} /> // eslint-disable-line
       ))}
     </g>
@@ -23,6 +23,6 @@ export default function Map(props) {
 
 Map.propTypes = {
   translation: PropTypes.number.isRequired,
-  map: PropTypes.array.isRequired,
+  path: PropTypes.array.isRequired,
   stroke: PropTypes.number.isRequired
 };

@@ -12,13 +12,13 @@ export const MenuBackground = styled.div`
 `;
 
 export const MenuButton = styled.button`
-  background-color: #fffff;
+  background-color: #008cba;
   font-size: 125%;
   border-radius: 15%;
   border: 2px solid #555555;
   font-family: monospace;
   &:hover {
-    background-color: #e8e8e8;
+    background-color: #02a8de;
   }
 `;
 
@@ -38,4 +38,11 @@ export const MainButton = styled.button`
   &:hover {
     background-color: #02a8de;
   }
+`;
+
+export const ClearMainButton = styled.button`
+  background-color: Transparent;
+  border: none;
+  font-size: 250%;
+  color: #323232; /* this is the same as the menu background */
 `;
