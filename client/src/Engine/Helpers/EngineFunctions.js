@@ -130,16 +130,16 @@ const getX = props => {
  * Outputs the y value of the sprite given a current state of the game
  *   and currentTime
  *
- * @params: props: { // see constants.js
-        currentTime: ,
-        descentStartTime: ,
-        jumpStartTime: ,
-        jumpState: ,
-        yStart: ,
-        y: ,
-        paused: ,
+ * @params: props: {
+        currentTime: time when the funciton is excecuted (new Date().getTime())
+        descentStartTime: // see constants.js
+        jumpStartTime: // see constants.js
+        jumpState: // see constants.js
+        yStart: // see constants.js
+        y: // see constants.js
+        paused: // see constants.js
       }
- * @outputs: y (an integer)
+ * @outputs: y (an integer)  our current y value
  */
 const getY = props => {
   if (props.jumpState === CONSTANTS.jump.STOP || props.paused) {
@@ -879,11 +879,11 @@ const spriteGoingDown = props => {
 /*
  * Outputs a motionChange object based on the game state passed as props
  *
- * @params: props: { // see constants.js
- *          variables: ,
- *          state: ,
- *          strokeWidth: ,
- *          map: ,
+ * @params: props: {
+ *          variables:  our local variables not tied to state
+ *          state: game state
+ *          strokeWidth: of our svg path
+ *          map:
  *          mapLength: ,
  *          }
  * @outputs: { time: , event: , } motionChange object

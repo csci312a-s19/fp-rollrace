@@ -28,10 +28,12 @@ const Background = styled.div`
   height: 100vh;
 `;
 
+// Allows us to have SVGs on top of each other
 const SVGLayer = styled.svg`
   position: absolute;
 `;
 
+// Countdown
 const Text = styled.text`
   font-size: 4000%;
   font-family: 'Gugi', cursive;
@@ -41,13 +43,7 @@ class GameEngine extends Component {
   constructor(props) {
     super(props);
 
-    this.state = Object.assign({}, CONSTANTS.INITIAL_STATE, {
-      guest: this.props.guest,
-      map: this.props.mapName,
-      multi: this.props.multi,
-      playercolor: this.props.playercolor,
-      restart: false
-    });
+    this.state = Object.assign({}, CONSTANTS.INITIAL_STATE);
 
     this.restartMinutes = this.props.minutes;
     this.variables = Object.assign({}, CONSTANTS.INITIAL_VARIABLES);
@@ -59,26 +55,33 @@ class GameEngine extends Component {
       this.socket = io.connect(this.props.lobby);
     }
 
+    // timeout for debounce
     this.timeout = null;
     this.renderInterval = null;
     this.updateInterval = null;
+
+    // we change the countdown every second at the start then set back to null
     this.countdownInterval = null;
 
-    this.mapLength = findMapSpan(this.props.mapProps.map);
-    this.map = buildMapHashtable(
+    // length in SVG coordinates
+    this.mapLength = findMapSpan(this.props.mapProps.path);
+
+    // our svg in hashmap form
+    this.hashedGameMap = buildMapHashtable(
       this.mapLength,
       this.props.mapProps.strokeWidth,
-      this.props.mapProps.map
+      this.props.mapProps.path
     );
 
     this.debounce = this.debounce.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.handleJumpKey = this.handleJumpKey.bind(this);
-    this.handleChangeJumpKey = this.handleChangeJumpKey.bind(this);
+    this.handleBack = this.handleBack.bind(this);
     this.handleWindowResize = this.handleWindowResize.bind(this);
     this.restartGame = this.restartGame.bind(this);
     this.resumeGame = this.resumeGame.bind(this);
     this.pauseGame = this.pauseGame.bind(this);
+    this.endGame = this.endGame.bind(this);
     this.sendEndgameData = this.sendEndgameData.bind(this);
     this.getX = getX.bind(this);
     this.getMapTranslation = getMapTranslation.bind(this);
@@ -86,7 +89,6 @@ class GameEngine extends Component {
     this.findNextChange = findNextChange.bind(this);
     this.startLoops = this.startLoops.bind(this);
     this.startCountdown = this.startCountdown.bind(this);
-    this.timeOut = this.timeOut.bind(this);
     this.getScore = this.getScore.bind(this);
   }
 
@@ -110,8 +112,17 @@ class GameEngine extends Component {
     };
   }
 
+  handleBack(newKey) {
+    if (newKey) {
+      this.setState({ jumpKey: newKey, changingKey: false, hideMenu: false });
+    } else {
+      this.setState({ changingKey: false, hideMenu: false });
+    }
+  }
+
   // Initiates jump
   handleJumpKey() {
+    // set the starting position of the jump
     this.variables.yStart = this.getY({
       currentTime: new Date().getTime(),
       descentStartTime: this.variables.descentStartTime,
@@ -128,15 +139,10 @@ class GameEngine extends Component {
         variables: this.variables,
         state: this.state,
         strokeWidth: this.props.mapProps.strokeWidth,
-        map: this.map,
+        map: this.hashedGameMap,
         mapLength: this.mapLength
       });
     })();
-  }
-
-  // Changes our current jump key
-  handleChangeJumpKey(event) {
-    this.setState({ jumpKey: event.keyCode });
   }
 
   /*
@@ -144,9 +150,7 @@ class GameEngine extends Component {
    * character from jumping mid-jump
    */
   handleKeyPress(event) {
-    if (this.state.changingKey) {
-      this.handleChangeJumpKey(event);
-    } else if (
+    if (
       event.keyCode === this.state.jumpKey &&
       this.variables.jumpState === CONSTANTS.jump.STOP &&
       !this.state.paused &&
@@ -200,12 +204,11 @@ class GameEngine extends Component {
 
     /*
      * make sure window is correct size
-     * (person may have changes window while playing so can't really make a default for it)
+     * (person may have changed window while playing so can't really make a default for it)
      */
     const restartState = Object.assign({}, CONSTANTS.INITIAL_STATE, {
       windowHeight: window.innerHeight,
-      restart: true,
-      score: this.state.score
+      highscore: this.state.highscore
     });
     this.variables = Object.assign({}, CONSTANTS.INITIAL_VARIABLES);
     this.setState(restartState);
@@ -244,6 +247,22 @@ class GameEngine extends Component {
     }
   }
 
+  // causes the game to stop rendering and sets gameover to true
+  endGame(wasBooted) {
+    clearInterval(this.renderInterval);
+    clearInterval(this.updateInterval);
+    this.setState({
+      gameover: true,
+      wasBooted: wasBooted,
+      endScore: parseInt(
+        (new Date().getTime() -
+          this.variables.gameStartTime -
+          this.variables.timePaused) /
+          1000
+      )
+    });
+  }
+
   // send gameover data
   sendEndgameData() {
     const finishTime = parseInt(
@@ -254,7 +273,7 @@ class GameEngine extends Component {
     );
 
     if (
-      !this.state.guest // exclusive to members
+      !this.props.guest // exclusive to members
     ) {
       const options = {
         url: `${
@@ -266,11 +285,12 @@ class GameEngine extends Component {
           type: 'end',
           contents: {
             time: finishTime
-          }
+          },
+          mapId: this.props.mapProps.mapId,
+          wasBooted: this.state.wasBooted
         },
         json: true
       };
-
       request
         .put(options)
         .then(() => {
@@ -280,36 +300,18 @@ class GameEngine extends Component {
           throw Error(err);
         });
     } else {
-      if (finishTime < this.state.guest.map_1) {
-        // TODOOOO MAKE THIS NOT HARDCODEEEEE
-        this.setState(
-          {
-            dataSent: true,
-            guest: Object.assign(this.state.guest, {
-              map_1: finishTime,
-              total_games: this.state.guest.total_games + 1
-            })
-          },
-          this.getScore
-        );
-      } else {
-        this.setState(
-          {
-            dataSent: true,
-            guest: Object.assign(this.state.guest, {
-              total_games: this.state.guest.total_games + 1
-            })
-          },
-          this.getScore
-        );
-      }
+      // first we update the guest's states, then we set out dataSent to true, then we getScore
+      this.props.updateGuestStats(
+        finishTime,
+        this.state.wasBooted,
+        this.setState({ dataSent: true }, this.getScore)
+      );
     }
   }
 
   // sets gameStartTime and starts the necessary animation loops
   startLoops() {
-    this.setState({ timerCanStart: true });
-    this.setState({ restart: false });
+    this.setState({ timerCanStart: true, resetTimer: false });
     this.variables.gameStartTime = new Date().getTime();
     this.variables.mapTranslationStartTime = new Date().getTime();
 
@@ -318,7 +320,7 @@ class GameEngine extends Component {
         variables: this.variables,
         state: this.state,
         strokeWidth: this.props.mapProps.strokeWidth,
-        map: this.map,
+        map: this.hashedGameMap,
         mapLength: this.mapLength
       });
     })();
@@ -376,7 +378,7 @@ class GameEngine extends Component {
             variables: this.variables,
             state: this.state,
             strokeWidth: this.props.mapProps.strokeWidth,
-            map: this.map,
+            map: this.hashedGameMap,
             mapLength: this.mapLength
           });
         })();
@@ -395,19 +397,9 @@ class GameEngine extends Component {
             x: this.variables.x,
             paused: this.state.paused
           }) >=
-          this.mapLength - CONSTANTS.GAMEOVER_X
+          this.mapLength - this.props.mapProps.end
         ) {
-          clearInterval(this.renderInterval);
-          clearInterval(this.updateInterval);
-          this.setState({
-            gameover: true,
-            endScore: parseInt(
-              (new Date().getTime() -
-                this.variables.gameStartTime -
-                this.variables.timePaused) /
-                1000
-            )
-          });
+          this.endGame(false); // game ended not due to a boot
         } else {
           this.setState({
             mapTranslation: this.getMapTranslation({
@@ -446,14 +438,18 @@ class GameEngine extends Component {
       request
         .get(options)
         .then(resp => {
-          this.setState({ score: resp.map_1 });
+          this.setState({
+            highscore: resp[`map_${this.props.mapProps.mapId}`]
+          });
         })
         .catch(err => {
           //console.log('run');
           throw Error(err);
         });
     } else {
-      this.setState({ score: this.props.guest.map_1 });
+      this.setState({
+        highscore: this.props.guest[`map_${this.props.mapProps.mapId}`]
+      });
     }
   }
 
@@ -480,7 +476,7 @@ class GameEngine extends Component {
 
     this.getScore();
 
-    if (this.state.multi) {
+    if (this.props.multi) {
       this.socket.on('connect', () => {
         console.log('connected');
         /*
@@ -553,22 +549,9 @@ class GameEngine extends Component {
     this.handleWindowResize();
   }
 
-  //Ends game when timer reaches zero
-  timeOut() {
-    this.setState({
-      gameover: true,
-      endScore: parseInt(
-        (new Date().getTime() -
-          this.variables.gameStartTime -
-          this.variables.timePaused) /
-          1000
-      )
-    });
-  }
-
   render() {
     // Find the length of the map
-    const pathLength = this.mapLength - CONSTANTS.GAMEOVER_X;
+    const pathLength = this.mapLength - this.props.mapProps.end;
     const docBody = document.querySelector('body');
     docBody.addEventListener('keypress', e => this.handleKeyPress(e));
 
@@ -585,12 +568,21 @@ class GameEngine extends Component {
         r={CONSTANTS.SPRITE_SIDE / 2}
         stroke="white"
         strokeWidth="1"
-        fill={this.state.playercolor}
+        fill={this.props.playercolor}
       />
     ];
     console.log(boxes);
 
-    if (this.state.multi) {
+    const nickname = (
+      <text
+        x={this.variables.x + 50 - this.props.playerName.length * 4}
+        y={this.state.y - 30}
+        fill="white"
+      >
+        {this.props.playerName}
+      </text>
+    );
+    if (this.props.multi) {
       // now we need to account for other players that should be rendered
       if (this.state.players !== undefined) {
         console.log(this.state.players);
@@ -634,11 +626,9 @@ class GameEngine extends Component {
         {/* conditional rendering when the pause button is toggled */}
         {this.state.paused && this.state.hideMenu && this.state.changingKey && (
           <ChangeKeyMenu
-            jumpKey={this.state.jumpKey}
-            showMenu={() =>
-              this.setState({ changingKey: false, hideMenu: false })
-            }
+            goBack={this.handleBack}
             showModal={this.state.changingKey}
+            currentKey={this.state.jumpKey}
           />
         )}
         {/*Pause menu renders if the pause button is toggled and the changekey menu is not being displayed*/}
@@ -667,16 +657,16 @@ class GameEngine extends Component {
               <Timer
                 y={CONSTANTS.TOOLBAR_Y}
                 x={CONSTANTS.TOOLBAR_X}
-                pause={this.state.paused}
-                multi={this.state.multi}
+                startTime={this.props.mapProps.startTime}
+                paused={this.state.paused}
                 timerCanStart={this.state.timerCanStart}
-                boot={bool => this.setState({ gameover: bool }, this.timeOut)}
-                restart={this.state.restart}
+                handleBoot={this.endGame}
+                resetTimer={this.state.resetTimer}
               />
               <CurrBestTime
                 y={CONSTANTS.TOOLBAR_Y}
                 x={CONSTANTS.TOOLBAR_X}
-                score={this.state.score}
+                highscore={this.state.highscore}
               />
 
               <ProgressBar
@@ -693,15 +683,17 @@ class GameEngine extends Component {
                   paused: this.state.paused
                 })}
                 pathLen={pathLength}
+                spriteColor={this.props.playercolor}
               />
             </>
           )}
           <Map
             translation={this.state.mapTranslation}
-            map={this.props.mapProps.map}
+            path={this.props.mapProps.path}
             stroke={this.props.mapProps.strokeWidth}
             className="map"
           />
+          {nickname}
           {boxes}
           <PauseButton
             x={CONSTANTS.ICON_X}
@@ -717,26 +709,33 @@ class GameEngine extends Component {
             {CONSTANTS.COUNTDOWN_NUMBERS[this.state.countdownIndex]}{' '}
           </Text>
           {/* tutorial used to be here */}
-          <g>
-            {/* player icon */}
-            <circle
-              cx={CONSTANTS.ICON_X}
-              cy={CONSTANTS.TOOLBAR_Y + 100}
-              r={CONSTANTS.SPRITE_SIDE / 4}
-              stroke="white"
-              strokeWidth="1"
-              fill={this.state.playercolor}
-              className="icon"
-            />
-          </g>
+
+          {/*Remove the player color icon in singleplayer mode*/}
+          {this.state.multi ? (
+            <g>
+              {/* player icon */}
+              <circle
+                cx={CONSTANTS.ICON_X}
+                cy={CONSTANTS.TOOLBAR_Y + 100}
+                r={CONSTANTS.SPRITE_SIDE / 4}
+                stroke="white"
+                strokeWidth="1"
+                fill={this.state.playercolor}
+                className="icon"
+              />
+            </g>
+          ) : (
+            <></>
+          )}
         </SVGLayer>
 
         {this.state.dataSent && (
           <GameoverMenu
             restart={() => this.restartGame()}
             exitToMenu={() => this.props.goToMenu()}
-            highscore={this.state.score}
+            highscore={this.state.highscore}
             score={this.state.endScore}
+            wasBooted={this.state.wasBooted}
             showModal={this.state.gameover}
           />
         )}
@@ -745,34 +744,15 @@ class GameEngine extends Component {
   }
 }
 
-/* tutorial:
- *<g onClick={() => this.pauseGame()}>
- *  <g onClick={() => this.setState({ tutorial: true })}>
- *    {' '}
- *    {/ pauses game because within pausing div/}
- *    <rect
- *      key={'help-me'}
- *      rx={15}
- *      ry={15}
- *      x={115}
- *      y={15}
- *      height={50}
- *      width={50}
- *      fill={'pink'}
- *    />
- *    <text x={135} y={45} height={50} width={50}>
- *      ?
- *    </text>
- *  </g>
- *</g>
- */
-
 GameEngine.propTypes = {
   lobby: PropTypes.string.isRequired,
   guest: PropTypes.object,
   mapProps: PropTypes.object.isRequired,
   multi: PropTypes.bool.isRequired,
-  goToMenu: PropTypes.func.isRequired
+  goToMenu: PropTypes.func.isRequired,
+  playercolor: PropTypes.string.isRequired,
+  playerName: PropTypes.string.isRequired,
+  updateGuestStats: PropTypes.func.isRequired
 };
 
 export default GameEngine;

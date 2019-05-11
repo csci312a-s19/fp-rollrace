@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`progressbar progressBar snapshot 1`] = `
+<g>
+  <rect
+    fill="#ffffff"
+    height={30}
+    width={300}
+    x={800}
+    y={50}
+  />
+  <ellipse
+    cx={800}
+    cy={65}
+    rx={5}
+    ry={15}
+  />
+</g>
+`;

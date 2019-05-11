@@ -1,5 +1,8 @@
-// reused constants
+// constants for our constants:
+// time between rerenders
 const RENDER_TIMEOUT = 20;
+
+// Where the sprite first starts
 const STARTING_Y = 547;
 
 // constants object for game initialization
@@ -9,7 +12,6 @@ export const CONSTANTS = {
   TOOLBAR_Y: 15,
   TOOLBAR_X: 800,
   ICON_X: 40,
-  GAMEOVER_X: 667,
   UPDATE_TIMEOUT: 20, // time between motionChange updates
   RENDER_TIMEOUT: RENDER_TIMEOUT, // time between rerenders
   JUMP_SPEED: 0.0013, // acceleration ("gravity") in the game
@@ -18,27 +20,28 @@ export const CONSTANTS = {
   SPRITE_SIDE: 100, // size of the invisiable square surrounding the sprite
   PATH_THRESH: 4, // a constant used when finding the end of a path
   TIME_THRESH: RENDER_TIMEOUT, // a constant used in the motionChange update loop
-  COUNTDOWN_X: 730,
-  COUNTDOWN_Y: 650,
-  COUNTDOWN_NUMBERS: ['3', '2', '1', ''],
+  COUNTDOWN_X: 760, // X position of countdown numbers
+  COUNTDOWN_Y: 650, // Y position of countdown numbers
+  COUNTDOWN_NUMBERS: ['3', '2', '1', ''], // displayed countdown values
   INITIAL_STATE: {
-    countdownIndex: 0,
-    score: '',
-    dataSent: false,
-    // tutorial: false,
+    countdownIndex: 0, // index of our countdown numbers (where we are in the countdown)
+    highscore: '', // current highscore for the current map
+    dataSent: false, // indicates if we have sent data (put request) at the end of a game
+    wasBooted: false, // indicated whether the game ended due to a boot
     paused: false, // boolean to determine whether or not the game is in the paused state
-    endScore: undefined,
+    endScore: undefined, // score at the completion of the game
     gameover: false, // boolean to determine whether or not the game has ended
     jumpKey: 32, // space bar
     changingKey: false, // boolean to determine whether or not the game is in the key change state
-    timerCanStart: false,
+    timerCanStart: false, // prevents timer from starting during countdown
+    resetTimer: true, // should we reset the timer after a restart or game start
     y: STARTING_Y, // the current y coordinate of the sprite (upper left corner)
     mapTranslation: 0, // the amount the map is currently translated to the left (interger <= 0)
     hideMenu: false,
     windowHeight: window.innerHeight,
     players: undefined,
     color: `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() *
-      255})`
+      255})` // svg player's color
   },
   INITIAL_VARIABLES: {
     gameStartTime: undefined, // the time the game starts

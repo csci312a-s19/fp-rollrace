@@ -15,8 +15,13 @@ export default function GameoverMenu(props) {
     <ModalProvider>
       <StyledModal isOpen={props.showModal}>
         <StyledP>Game Over!</StyledP>
-        <StyledP>{`Score: ${props.score}`}</StyledP>
-        <StyledP>{`Highscore: ${props.highscore}`}</StyledP>
+        {/* only show the current score if the player actually completed the game */}
+        {!props.wasBooted && <StyledP>{`Score: ${props.score} sec`}</StyledP>}
+
+        {/* only show the highscore if the player has one on file for the map */}
+        {props.highscore !== -1 && (
+          <StyledP>{`Highscore: ${props.highscore} sec`}</StyledP>
+        )}
         <ModalStyledButton onClick={props.restart}>Restart</ModalStyledButton>
         <ModalStyledButton onClick={props.exitToMenu}>
           Main Menu

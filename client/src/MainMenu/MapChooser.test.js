@@ -29,20 +29,32 @@ describe('MapChooser tests', () => {
 
   test('Only right button visible at first map', () => {
     comp.setState({ currMap: 0 });
-    expect(comp.find('.leftbutton').exists()).toEqual(false);
-    expect(comp.find('.rightbutton').exists()).toEqual(true);
+    const leftButton = comp
+      .find('.leftbutton')
+      .filterWhere(n => n.name() === 'button');
+    leftButton.simulate('click');
+    expect(comp.state('currMap')).toEqual(0);
   });
 
   test('Only left button visible at last map', () => {
     comp.setState({ currMap: 2 });
-    expect(comp.find('.leftbutton').exists()).toEqual(true);
-    expect(comp.find('.rightbutton').exists()).toEqual(false);
+    const rightButton = comp
+      .find('.rightbutton')
+      .filterWhere(n => n.name() === 'button');
+    rightButton.simulate('click');
+    expect(comp.state('currMap')).toEqual(2);
   });
 
   test('Middle maps should contain both buttons', () => {
     comp.setState({ currMap: 1 });
     expect(comp.find('.leftbutton').exists()).toEqual(true);
     expect(comp.find('.rightbutton').exists()).toEqual(true);
+  });
+
+  test('Main Menu and Play! buttons visible', () => {
+    comp.setState({ currMap: 1 });
+    expect(comp.find('.menubutton').exists()).toEqual(true);
+    expect(comp.find('.playbutton').exists()).toEqual(true);
   });
 
   test('Expect clicking on right arrow to properly change map', () => {
@@ -56,10 +68,10 @@ describe('MapChooser tests', () => {
 
   test('Expect clicking on left arrow to properly change map', () => {
     comp.setState({ currMap: 1 });
-    const rightButton = comp
+    const leftButton = comp
       .find('.leftbutton')
       .filterWhere(n => n.name() === 'button');
-    rightButton.simulate('click');
+    leftButton.simulate('click');
     expect(comp.state('currMap')).toEqual(0);
   });
 });
