@@ -58,18 +58,29 @@ class Lobbies extends Component {
     super(props);
 
     this.state = {
-      lobbies: undefined /* To be filled in after request to server is made */
+      lobbies: undefined /* To be filled in after request to server is made */,
+      maps: undefined
     };
   }
 
   componentDidMount() {
-    const options = {
+    const optionsL = {
       /* request to be sent to for active lobbies */
       url: `${
         process.env.NODE_ENV === 'development'
           ? 'http://localhost:3000'
           : 'https://rollrace.herokuapp.com'
       }/api/lobbies/`,
+      json: true
+    };
+
+    const optionsM = {
+      /* request to be sent to for active lobbies */
+      url: `${
+        process.env.NODE_ENV === 'development'
+          ? 'http://localhost:3000'
+          : 'https://rollrace.herokuapp.com'
+      }/api/maps/`,
       json: true
     };
 
