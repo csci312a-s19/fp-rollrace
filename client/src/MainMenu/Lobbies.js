@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { MainButton } from '../Style/MenuStyle.js';
 import request from 'request-promise-native';
 import styled from 'styled-components';
 
@@ -61,6 +62,10 @@ class Lobbies extends Component {
       lobbies: undefined /* To be filled in after request to server is made */,
       maps: undefined
     };
+    this.handleClick = this.handleClick.bind(this);
+  }
+  handleClick() {
+    this.props.goToMenu();
   }
 
   componentDidMount() {
@@ -131,6 +136,10 @@ class Lobbies extends Component {
     return (
       <Background>
         <Div>{cards}</Div>
+        <MainButton className="tomenu" onClick={this.handleClick}>
+          {' '}
+          Go To Menu{' '}
+        </MainButton>
       </Background>
     );
   }

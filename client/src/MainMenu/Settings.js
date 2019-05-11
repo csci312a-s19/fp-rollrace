@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Row } from 'reactstrap';
+import { Row, Form, Input } from 'reactstrap';
 import styled from 'styled-components';
 import {
   MenuBackground,
   MenuTitle,
-  MenuButton,
+  MainButton,
   MenuText
 } from '../Style/MenuStyle.js';
 
@@ -42,7 +42,7 @@ const LabeledSlider = props => {
 
 LabeledSlider.propTypes = {
   label: PropTypes.string.isRequired,
-  value: PropTypes.number.isRequired,
+  value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   valueChange: PropTypes.func.isRequired
 };
 
@@ -50,37 +50,58 @@ class Settings extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      red: Math.random() * 255,
-      green: Math.random() * 255,
-      blue: Math.random() * 255
+      red: this.findColor(0),
+      green: this.findColor(1),
+      blue: this.findColor(2),
+      nickName: 'dog'
     };
     this.handleClick = this.handleClick.bind(this);
-    this.selectColor = this.selectColor.bind(this);
-    this.makeColor = this.makeColor.bind(this);
+    this.saveSettings = this.saveSettings.bind(this);
+    this.selectName = this.selectName.bind(this);
+    this.findColor = this.findColor.bind(this);
   }
+  //uses playercolor prop passed down from app to find
+  //corresponding red,green,blue values for the sliders
+  findColor(i) {
+    const color = this.props.playerColor;
+    const rgb = color.match(/\d+/g);
+    return rgb[i];
+  }
+
+  //handles go to menu button
   handleClick() {
     this.props.goToMenu();
   }
 
-  selectColor() {
+  //updates nickname state everytime something is typed
+  selectName(event) {
+    this.setState({ nickName: event.target.value });
+  }
+
+  //passes down nickname and color that are chosen when clicked on
+  //save settings
+  saveSettings() {
     const color = `rgb(${this.state.red},${this.state.green},${
       this.state.blue
     })`;
     this.props.selectedColor(color);
+    if (this.state.nickName === null) {
+      this.setState({ nickName: ' ' });
+    }
+    this.props.selectedName(this.state.nickName);
   }
-
-  makeColor() {
-    const color = `rgb(${this.state.red},${this.state.green},${
-      this.state.blue
-    })`;
-    return color;
+  componentDidMount() {
+    const tempName = this.props.playerName;
+    this.setState({ nickName: tempName });
   }
 
   render() {
     return (
       <MenuBackground>
         <MenuTitle> Settings </MenuTitle>
-        <MenuButton onClick={this.handleClick}>{'<-'} Main Menu</MenuButton>
+        <MainButton className="tomenu" onClick={this.handleClick}>
+          {'<-'} Main Menu
+        </MainButton>
         <Row>
           <SettingsOption>
             <MenuText> Choose Your Color </MenuText>
@@ -91,7 +112,9 @@ class Settings extends Component {
                 r="40"
                 stroke="white"
                 strokeWidth="1"
-                fill={this.makeColor()}
+                fill={`rgb(${this.state.red},${this.state.green},${
+                  this.state.blue
+                })`}
               />
             </svg>
             <LabeledSlider
@@ -118,15 +141,30 @@ class Settings extends Component {
           </SettingsOption>
           <SettingsOption>
             <MenuText> Choose Your Nickname </MenuText>
+            <Form>
+              <Input
+                type="text"
+                onChange={this.selectName}
+                maxLength="13"
+                defaultValue={this.props.playerName}
+              />
+            </Form>
           </SettingsOption>
         </Row>
-        <MenuButton onClick={this.selectColor}> Save Settings </MenuButton>
+        <MainButton className="savesettings" onClick={this.saveSettings}>
+          {' '}
+          Save Settings{' '}
+        </MainButton>
       </MenuBackground>
     );
   }
 }
 
 Settings.propTypes = {
+  playerName: PropTypes.string.isRequired,
+  playerColor: PropTypes.string.isRequired,
+  selectedColor: PropTypes.func.isRequired,
+  selectedName: PropTypes.func.isRequired,
   goToMenu: PropTypes.func.isRequired
 };
 
